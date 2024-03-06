@@ -1,6 +1,10 @@
 ###Game Content Resources###
 #Download the routes below from Epic Store
-Content
+Content/__ExternalActors__
+Content/__ExternalObjects__
+Content/ParagonPhase
+Content/StarterContent
+Content/STF
 
 # Visual Studio 2015 user specific files
 .vs/
