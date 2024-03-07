@@ -7,6 +7,13 @@
 
 APAGameModeBase::APAGameModeBase()
 {
+	///Script/Engine.Blueprint'/Game/PA/Characters/Blueprints/BP_ThirdPersonPhase.BP_ThirdPersonPhase'
+	///Game/PA/Characters/Blueprints/BP_ThirdPersonPhase.BP_ThirdPersonPhase
+
+	///Script/Engine.Blueprint'/Game/PA/Characters/Blueprints/BP_ThirdPersonPhase_2.BP_ThirdPersonPhase_2'
+
+	//static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Game/PA/Characters/Blueprints/BP_ThirdPersonPhase_2.BP_ThirdPersonPhase_2_C"));
+
 	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Script/Project_A.PACharacterPlayer"));
 	if (DefaultPawnClassRef.Class)
 	{
