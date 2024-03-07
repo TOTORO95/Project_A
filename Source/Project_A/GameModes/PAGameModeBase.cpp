@@ -3,6 +3,7 @@
 #include "PAGameModeBase.h"
 
 #include "Chracters/PAPlayerController.h"
+#include "Project_A.h"
 
 APAGameModeBase::APAGameModeBase()
 {
@@ -18,4 +19,24 @@ APAGameModeBase::APAGameModeBase()
 	{
 		PlayerControllerClass = PlayerControllerClassRef.Class;
 	}
+}
+void APAGameModeBase::StartPlay()
+{
+	PA_LOG(LogPANetwork, Log, TEXT("%s"), TEXT("Begin"));
+	Super::StartPlay();
+}
+
+void APAGameModeBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	//GetWorldTimerManager().SetTimer(
+	//	GameTimeHandle, this, &APAGameModeBase::DefaultGameTimer, GetWorldSettings()->GetEffectiveTimeDilation(), true);
+}
+
+void APAGameModeBase::DefaultGameTimer()
+{
+}
+
+void APAGameModeBase::FinishMatch()
+{
 }

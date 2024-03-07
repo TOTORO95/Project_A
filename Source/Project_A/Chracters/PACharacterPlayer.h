@@ -5,6 +5,7 @@
 #include "Chracters/PACharacterBase.h"
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
+
 #include "PACharacterPlayer.generated.h"
 
 /**
@@ -48,6 +49,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
 	TObjectPtr<class UInputAction> LookAction;
 
+	void SetInputAction();
 	void Move(const FInputActionValue& InPutValue);
-	void ChangeCameraView(const FInputActionValue& InPutValue);
+	void Look(const FInputActionValue& InPutValue);
+
+	void SetupCameraType();
 };

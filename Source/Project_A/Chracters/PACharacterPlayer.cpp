@@ -3,40 +3,66 @@
 #include "Chracters/PACharacterPlayer.h"
 
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Engine/LocalPlayer.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "InputAction.h"
+#include "InputActionValue.h"
+#include "InputMappingContext.h"
+#include "Net/UnrealNetwork.h"
 
 APACharacterPlayer::APACharacterPlayer()
 {
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -100.f), FRotator(0.f, -90.f, 0.f));
+	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+
+	FString MaleMeshPath =
+		TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'");
+	FString FemaleMeshPath =
+		TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple'");
+
+	FString PhaseMesh = TEXT("/Script/Engine.SkeletalMesh'/Game/ParagonPhase/Characters/Heroes/Phase/Meshes/Phase_GDC.Phase_GDC'");
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(*PhaseMesh);
+	if (CharacterMeshRef.Object)
+	{
+		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
+	}
+
+	FString MaleAnimInstancePath = TEXT("/Game/Characters/Mannequins/Animations/ABP_Manny.ABP_Manny_C");
+	FString FemaleAnimInstancePath = TEXT("/Game/Characters/Mannequins/Animations/ABP_Quinn.ABP_Quinn_C");
+	FString PhaseAnimInstancePath = TEXT("/Game/ParagonPhase/Characters/Heroes/Phase/Phase_AnimBlueprint.Phase_AnimBlueprint_C");
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(*PhaseAnimInstancePath);
+	if (AnimInstanceRef.Class)
+	{
+		GetMesh()->SetAnimInstanceClass(AnimInstanceRef.Class);
+	}
+
 	ThirdPersonCameraSetting();
-
-	//Input
-	//static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT(""));
-	//if (InputMappingContextRef.Object)
-	//{
-	//	DefaultMappingContext = InputMappingContextRef.Object;
-	//}
-
-	//static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT(""));
-	//if (InputActionMoveRef.Object)
-	//{
-	//	MoveAction = InputActionMoveRef.Object;
-	//}
-
-	//static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT(""));
-	//if (InputActionJumpRef.Object)
-	//{
-	//	JumpAction = InputActionJumpRef.Object;
-	//}
+	SetInputAction();
 }
 
 void APACharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+	SetupCameraType();
 }
 
 void APACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
+	if (EnhancedInputComponent)
+	{
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::Move);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::Look);
+	}
 }
 
 void APACharacterPlayer::ThirdPersonCameraSetting()
@@ -55,13 +81,72 @@ void APACharacterPlayer::FirstPersonCameraSetting()
 {
 }
 
+void APACharacterPlayer::SetInputAction()
+{
+	// Input
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(
+		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/PA/Input/IMC_Default.IMC_Default'"));
+	if (InputMappingContextRef.Object)
+	{
+		DefaultMappingContext = InputMappingContextRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_Move.IA_Move'"));
+	if (InputActionMoveRef.Object)
+	{
+		MoveAction = InputActionMoveRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_Jump.IA_Jump'"));
+	if (InputActionJumpRef.Object)
+	{
+		JumpAction = InputActionJumpRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_Look.IA_Look'"));
+	if (InputActionLookRef.Object)
+	{
+		LookAction = InputActionLookRef.Object;
+	}
+}
 
 void APACharacterPlayer::Move(const FInputActionValue& InPutValue)
 {
+	FVector2D MovementVector = InPutValue.Get<FVector2D>();
+
+	const FRotator Rotation = Controller->GetControlRotation();
+	const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+	AddMovementInput(ForwardDirection, MovementVector.X);
+	AddMovementInput(RightDirection, MovementVector.Y);
 }
 
-void APACharacterPlayer::ChangeCameraView(const FInputActionValue& InPutValue)
+void APACharacterPlayer::Look(const FInputActionValue& InPutValue)
 {
+	FVector2D LookAxisVector = InPutValue.Get<FVector2D>();
+
+	AddControllerYawInput(LookAxisVector.X);
+	AddControllerPitchInput(LookAxisVector.Y);
 }
 
+void APACharacterPlayer::SetupCameraType()
+{
+	if (!IsLocallyControlled())
+	{
+		return;
+	}
 
+	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	UEnhancedInputLocalPlayerSubsystem* Subsystem =
+		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+	if (Subsystem)
+	{
+		Subsystem->ClearAllMappings();
+		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	}
+}
