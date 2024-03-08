@@ -22,29 +22,29 @@ APACharacterPlayer::APACharacterPlayer()
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
 
-	FString MaleMeshPath =
-		TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'");
-	FString FemaleMeshPath =
-		TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple'");
+	//FString MaleMeshPath =
+	//	TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'");
+	//FString FemaleMeshPath =
+	//	TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple'");
 
-	FString PhaseMesh = TEXT("/Script/Engine.SkeletalMesh'/Game/PA/Characters/Meshes/PA_Phase_GDC.PA_Phase_GDC'");
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(*PhaseMesh);
-	if (CharacterMeshRef.Object)
-	{
-		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
-	}
-	///Script/Engine.AnimBlueprint'/Game/PA/Characters/Animations/ABP_Manny.ABP_Manny'
-	FString PhaseAimInstancePath = TEXT("/Game/PA/Characters/Animations/ABP_Manny.ABP_Manny_C");
-	FString MaleAnimInstancePath = TEXT("/Game/Characters/Mannequins/Animations/ABP_Manny.ABP_Manny_C");
-	FString FemaleAnimInstancePath = TEXT("/Game/Characters/Mannequins/Animations/ABP_Quinn.ABP_Quinn_C");
-	/// Script/Engine.AnimBlueprint'/Game/PA/Characters/Blueprints/BP_PhaseAPose.BP_PhaseAPose'
-	/// Script/Engine.Blueprint'/Game/PA/Characters/Blueprints/BP_ThirdPersonPhase.BP_ThirdPersonPhase'
+	//FString PhaseMesh = TEXT("/Script/Engine.SkeletalMesh'/Game/PA/Characters/Meshes/PA_Phase_GDC.PA_Phase_GDC'");
+	//static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(*PhaseMesh);
+	//if (CharacterMeshRef.Object)
+	//{
+	//	GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
+	//}
+	/////Script/Engine.AnimBlueprint'/Game/PA/Characters/Animations/ABP_Manny.ABP_Manny'
+	//FString PhaseAimInstancePath = TEXT("/Game/PA/Characters/Animations/ABP_Manny.ABP_Manny_C");
+	//FString MaleAnimInstancePath = TEXT("/Game/Characters/Mannequins/Animations/ABP_Manny.ABP_Manny_C");
+	//FString FemaleAnimInstancePath = TEXT("/Game/Characters/Mannequins/Animations/ABP_Quinn.ABP_Quinn_C");
+	///// Script/Engine.AnimBlueprint'/Game/PA/Characters/Blueprints/BP_PhaseAPose.BP_PhaseAPose'
+	///// Script/Engine.Blueprint'/Game/PA/Characters/Blueprints/BP_ThirdPersonPhase.BP_ThirdPersonPhase'
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(*PhaseAimInstancePath);
-	if (AnimInstanceRef.Class)
-	{
-		GetMesh()->SetAnimInstanceClass(AnimInstanceRef.Class);
-	}
+	//static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(*PhaseAimInstancePath);
+	//if (AnimInstanceRef.Class)
+	//{
+	//	GetMesh()->SetAnimInstanceClass(AnimInstanceRef.Class);
+	//}
 
 	ThirdPersonCameraSetting();
 	SetInputAction();
