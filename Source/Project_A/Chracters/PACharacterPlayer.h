@@ -11,6 +11,14 @@
 /**
  *
  */
+UENUM()
+enum class ECharacterCtrlType : uint8
+{
+	Third,
+	Quater,
+	// First,TODO : 아직미구현으로 뒤로 미룸
+};
+
 UCLASS()
 class PROJECT_A_API APACharacterPlayer : public APACharacterBase
 {
@@ -24,11 +32,19 @@ protected:
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	// Character Control
+	void ChangeCharacterCtrl();
+	void SetCharacterCtrl(ECharacterCtrlType InCharacterControlType);
+
+	void SetCharacterCtrlData(const class UPACharacterCtrlDataAsset* InCharacterCtrlDataAsset);
+	UPROPERTY(VisibleAnywhere);
+	TMap<ECharacterCtrlType, class UPACharacterCtrlDataAsset*> CharacterCtrlMap;
 
 	// Camera Section
 protected:
-	void ThirdPersonCameraSetting();
-	void FirstPersonCameraSetting();
+	void SetupControlDataAsset();
+	void SetupCamera();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class USpringArmComponent> CameraBoom;
@@ -42,17 +58,25 @@ protected:
 	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
+	TObjectPtr<class UInputAction> ChangeCtrlAciton;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
 	TObjectPtr<class UInputAction> JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
-	TObjectPtr<class UInputAction> MoveAction;
+	TObjectPtr<class UInputAction> ThirdMoveAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
-	TObjectPtr<class UInputAction> LookAction;
+	TObjectPtr<class UInputAction> ThirdLookAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
+	TObjectPtr<class UInputAction> QuaterMoveAction;
 
 	void SetInputAction();
-	void Move(const FInputActionValue& InPutValue);
-	void Look(const FInputActionValue& InPutValue);
+	void ThirdMove(const FInputActionValue& InPutValue);
+	void ThirdLook(const FInputActionValue& InPutValue);
 
-	void SetupCameraType();
+	void QuaterMove(const FInputActionValue& InPutValue);
+
+	ECharacterCtrlType CurrentCharacterCtrlype;
 };

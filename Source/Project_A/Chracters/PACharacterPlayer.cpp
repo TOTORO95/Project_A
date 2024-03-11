@@ -14,46 +14,36 @@
 #include "InputActionValue.h"
 #include "InputMappingContext.h"
 #include "Net/UnrealNetwork.h"
+#include "PACharacterCtrlDataAsset.h"
 #include "Project_A.h"
 
 APACharacterPlayer::APACharacterPlayer()
 {
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -100.f), FRotator(0.f, -90.f, 0.f));
-	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+	SetupCamera();
+	SetupControlDataAsset();
 
-	//FString MaleMeshPath =
-	//	TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'");
-	//FString FemaleMeshPath =
-	//	TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple'");
+	FString MaleMeshPath = TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'");
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(*MaleMeshPath);
+	if (CharacterMeshRef.Object)
+	{
+		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
+	}
 
-	//FString PhaseMesh = TEXT("/Script/Engine.SkeletalMesh'/Game/PA/Characters/Meshes/PA_Phase_GDC.PA_Phase_GDC'");
-	//static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(*PhaseMesh);
-	//if (CharacterMeshRef.Object)
-	//{
-	//	GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
-	//}
-	/////Script/Engine.AnimBlueprint'/Game/PA/Characters/Animations/ABP_Manny.ABP_Manny'
-	//FString PhaseAimInstancePath = TEXT("/Game/PA/Characters/Animations/ABP_Manny.ABP_Manny_C");
-	//FString MaleAnimInstancePath = TEXT("/Game/Characters/Mannequins/Animations/ABP_Manny.ABP_Manny_C");
-	//FString FemaleAnimInstancePath = TEXT("/Game/Characters/Mannequins/Animations/ABP_Quinn.ABP_Quinn_C");
-	///// Script/Engine.AnimBlueprint'/Game/PA/Characters/Blueprints/BP_PhaseAPose.BP_PhaseAPose'
-	///// Script/Engine.Blueprint'/Game/PA/Characters/Blueprints/BP_ThirdPersonPhase.BP_ThirdPersonPhase'
+	FString MaleAnimInstancePath = TEXT("/Game/PA/Characters/Animations/ABP_MnqNinja_AnimInstance.ABP_MnqNinja_AnimInstance_C");
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(*MaleAnimInstancePath);
+	if (AnimInstanceRef.Class)
+	{
+		GetMesh()->SetAnimInstanceClass(AnimInstanceRef.Class);
+	}
 
-	//static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(*PhaseAimInstancePath);
-	//if (AnimInstanceRef.Class)
-	//{
-	//	GetMesh()->SetAnimInstanceClass(AnimInstanceRef.Class);
-	//}
-
-	ThirdPersonCameraSetting();
 	SetInputAction();
+	CurrentCharacterCtrlype = ECharacterCtrlType::Quater;
 }
 
 void APACharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	SetupCameraType();
+	SetCharacterCtrl(CurrentCharacterCtrlype);
 }
 
 void APACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -65,12 +55,29 @@ void APACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	{
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::Move);
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::Look);
+		EnhancedInputComponent->BindAction(ChangeCtrlAciton, ETriggerEvent::Completed, this, &APACharacterPlayer::ChangeCharacterCtrl);
+		EnhancedInputComponent->BindAction(ThirdMoveAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::ThirdMove);
+		EnhancedInputComponent->BindAction(ThirdLookAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::ThirdLook);
+		EnhancedInputComponent->BindAction(QuaterMoveAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::QuaterMove);
 	}
 }
 
-void APACharacterPlayer::ThirdPersonCameraSetting()
+void APACharacterPlayer::SetupControlDataAsset()
+{
+	static ConstructorHelpers::FObjectFinder<UPACharacterCtrlDataAsset> ThirdCtrlDataRef(TEXT("/Game/PA/CharacterControl/APA_ThirdCameraData.APA_ThirdCameraData"));
+	if (ThirdCtrlDataRef.Object)
+	{
+		CharacterCtrlMap.Add(ECharacterCtrlType::Third, ThirdCtrlDataRef.Object);
+	}
+	static ConstructorHelpers::FObjectFinder<UPACharacterCtrlDataAsset> QuaterCtrlDataRef(TEXT("/Game/PA/CharacterControl/APA_QuaterCameraData.APA_QuaterCameraData"));
+
+	if (QuaterCtrlDataRef.Object)
+	{
+		CharacterCtrlMap.Add(ECharacterCtrlType::Quater, QuaterCtrlDataRef.Object);
+	}
+}
+
+void APACharacterPlayer::SetupCamera()
 {
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -82,42 +89,101 @@ void APACharacterPlayer::ThirdPersonCameraSetting()
 	FollowCamera->bUsePawnControlRotation = false;
 }
 
-void APACharacterPlayer::FirstPersonCameraSetting()
+void APACharacterPlayer::ChangeCharacterCtrl()
 {
+	switch (CurrentCharacterCtrlype)
+	{
+		case ECharacterCtrlType::Third:
+			SetCharacterCtrl(ECharacterCtrlType::Quater);
+			break;
+		case ECharacterCtrlType::Quater:
+			SetCharacterCtrl(ECharacterCtrlType::Third);
+			break;
+		default:
+			SetCharacterCtrl(ECharacterCtrlType::Third);
+			break;
+	}
+}
+
+void APACharacterPlayer::SetCharacterCtrl(ECharacterCtrlType InCharacterControlType)
+{
+	if (!IsLocallyControlled())
+	{
+		return;
+	}
+
+	UPACharacterCtrlDataAsset* CharacterCtrl = CharacterCtrlMap[InCharacterControlType];
+	if (!CharacterCtrl)
+	{
+		return;
+	}
+
+	SetCharacterCtrlData(CharacterCtrl);
+	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+	if (Subsystem)
+	{
+		Subsystem->ClearAllMappings();
+		UInputMappingContext* MappingContext = CharacterCtrl->InputMappingContext;
+		if (MappingContext)
+		{
+			Subsystem->AddMappingContext(MappingContext, 0);
+		}
+	}
+	CurrentCharacterCtrlype = InCharacterControlType;
+}
+
+void APACharacterPlayer::SetCharacterCtrlData(const UPACharacterCtrlDataAsset* InCharacterCtrlDataAsset)
+{
+	// Pawn
+	bUseControllerRotationYaw = InCharacterCtrlDataAsset->buseControllerRotationYaw;
+
+	// ChacterMovement
+	GetCharacterMovement()->bOrientRotationToMovement = InCharacterCtrlDataAsset->bOientRotationToMovement;
+	GetCharacterMovement()->RotationRate = InCharacterCtrlDataAsset->RotationRate;
+	GetCharacterMovement()->bUseControllerDesiredRotation = InCharacterCtrlDataAsset->bUseControllerDesiredRotation;
+
+	// Camera
+	CameraBoom->TargetArmLength = InCharacterCtrlDataAsset->TargetArmLength;
+	CameraBoom->SetRelativeRotation(InCharacterCtrlDataAsset->RelativeRotation);
+	CameraBoom->bUsePawnControlRotation = InCharacterCtrlDataAsset->bUsePawnControlRotation;
+	CameraBoom->bInheritPitch = InCharacterCtrlDataAsset->bInheritPitch;
+	CameraBoom->bInheritRoll = InCharacterCtrlDataAsset->bInheritRoll;
+	CameraBoom->bInheritYaw = InCharacterCtrlDataAsset->bInheritYaw;
+	CameraBoom->bDoCollisionTest = InCharacterCtrlDataAsset->bDoCollisionTest;
 }
 
 void APACharacterPlayer::SetInputAction()
 {
-	// Input
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(
-		TEXT("/Script/EnhancedInput.InputMappingContext'/Game/PA/Input/IMC_Default.IMC_Default'"));
-	if (InputMappingContextRef.Object)
-	{
-		DefaultMappingContext = InputMappingContextRef.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(
-		TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_Move.IA_Move'"));
-	if (InputActionMoveRef.Object)
-	{
-		MoveAction = InputActionMoveRef.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(
-		TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_Jump.IA_Jump'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_Jump.IA_Jump'"));
 	if (InputActionJumpRef.Object)
 	{
 		JumpAction = InputActionJumpRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(
-		TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_Look.IA_Look'"));
-	if (InputActionLookRef.Object)
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionThirdMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_ThirdMove.IA_ThirdMove'"));
+	if (InputActionThirdMoveRef.Object)
 	{
-		LookAction = InputActionLookRef.Object;
+		ThirdMoveAction = InputActionThirdMoveRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionThirdLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_ThirdLook.IA_ThirdLook'"));
+	if (InputActionThirdLookRef.Object)
+	{
+		ThirdLookAction = InputActionThirdLookRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionChangeCtrlRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_ChangeCtrlType.IA_ChangeCtrlType'"));
+	if (InputActionChangeCtrlRef.Object)
+	{
+		ChangeCtrlAciton = InputActionChangeCtrlRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionQuaterMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_QuaterMove.IA_QuaterMove'"));
+	if (InputActionQuaterMoveRef.Object)
+	{
+		QuaterMoveAction = InputActionQuaterMoveRef.Object;
 	}
 }
 
-void APACharacterPlayer::Move(const FInputActionValue& InPutValue)
+void APACharacterPlayer::ThirdMove(const FInputActionValue& InPutValue)
 {
 	FVector2D MovementVector = InPutValue.Get<FVector2D>();
 
@@ -131,7 +197,7 @@ void APACharacterPlayer::Move(const FInputActionValue& InPutValue)
 	AddMovementInput(RightDirection, MovementVector.Y);
 }
 
-void APACharacterPlayer::Look(const FInputActionValue& InPutValue)
+void APACharacterPlayer::ThirdLook(const FInputActionValue& InPutValue)
 {
 	FVector2D LookAxisVector = InPutValue.Get<FVector2D>();
 
@@ -139,19 +205,23 @@ void APACharacterPlayer::Look(const FInputActionValue& InPutValue)
 	AddControllerPitchInput(LookAxisVector.Y);
 }
 
-void APACharacterPlayer::SetupCameraType()
+void APACharacterPlayer::QuaterMove(const FInputActionValue& InPutValue)
 {
-	if (!IsLocallyControlled())
+	FVector2D MovementVector = InPutValue.Get<FVector2D>();
+	float InputSizeSquared = MovementVector.SquaredLength();
+	float MovementVectorSize = 1.f;
+	float MovementVectorSizeSquared = MovementVector.SquaredLength();
+	if (MovementVectorSize > 1.f)
 	{
-		return;
+		MovementVector.Normalize();
+		MovementVectorSizeSquared = 1.f;
 	}
-
-	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	UEnhancedInputLocalPlayerSubsystem* Subsystem =
-		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-	if (Subsystem)
+	else
 	{
-		Subsystem->ClearAllMappings();
-		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		MovementVectorSize = FMath::Sqrt(MovementVectorSizeSquared);
 	}
+	FVector MoveDirection = FVector(MovementVector.X, MovementVector.Y, 0.f);
+	GetController()->SetControlRotation(FRotationMatrix::MakeFromX(MoveDirection).Rotator());
+	AddMovementInput(MoveDirection, MovementVectorSize);
 }
+

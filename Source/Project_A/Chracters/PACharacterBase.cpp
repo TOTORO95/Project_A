@@ -4,6 +4,7 @@
 
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "PACharacterCtrlDataAsset.h"
 
 // Sets default values
 APACharacterBase::APACharacterBase()
@@ -31,6 +32,10 @@ void APACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APACharacterBase::InitCharacterComponent()
 {
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -100.f), FRotator(0.f, -90.f, 0.f));
+	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+
 	InitControllerRotation();
 	InitCollisionCompoent();
 	InitMovementComponent();
