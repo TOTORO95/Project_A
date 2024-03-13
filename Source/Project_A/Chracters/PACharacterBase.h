@@ -32,4 +32,22 @@ protected:
 	virtual void InitControllerRotation();
 	virtual void InitCollisionCompoent();
 	virtual void InitMovementComponent();
+
+	// Attack Section
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AnimationMontage)
+	TObjectPtr<class UAnimMontage> ComboActionMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AnimationMontage, Meta = (AllowPrivateAccess = "ture"))
+	TObjectPtr<class UPAComboAttackDataAsset> ComboActionDataAsset;
+
+	void ProcessComboCommand();
+	void ComboActionBegin();
+	void ComboActionEnd(class UAnimMontage* TargetMontage, bool IsPropelyEnded);
+	void SetComboCheckTimer();
+	void ComboCheck();
+
+	int32 CurrentCombo = 0;
+	FTimerHandle ComboTimerHandle;
+	bool HasNextComboCommand = false;
 };

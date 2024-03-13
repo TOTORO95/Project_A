@@ -22,19 +22,19 @@ APACharacterPlayer::APACharacterPlayer()
 	SetupCamera();
 	SetupControlDataAsset();
 
-	FString MaleMeshPath = TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'");
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(*MaleMeshPath);
-	if (CharacterMeshRef.Object)
-	{
-		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
-	}
+	// FString BP_PlayerPath = TEXT("/Script/Engine.Blueprint'/Game/PA/Characters/Blueprints/BP_PACharacterPlayer.BP_PACharacterPlayer_C'");
+	// static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(*BP_PlayerPath);
+	// if (CharacterMeshRef.Object)
+	//{
+	//	GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
+	// }
 
-	FString MaleAnimInstancePath = TEXT("/Game/PA/Characters/Animations/ABP_MnqNinja_AnimInstance.ABP_MnqNinja_AnimInstance_C");
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(*MaleAnimInstancePath);
-	if (AnimInstanceRef.Class)
-	{
-		GetMesh()->SetAnimInstanceClass(AnimInstanceRef.Class);
-	}
+	// FString MaleAnimInstancePath = TEXT("/Game/PA/Characters/Animations/ABP_MnqNinja_AnimInstance.ABP_MnqNinja_AnimInstance_C");
+	// static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(*MaleAnimInstancePath);
+	// if (AnimInstanceRef.Class)
+	//{
+	//	GetMesh()->SetAnimInstanceClass(AnimInstanceRef.Class);
+	// }
 
 	SetInputAction();
 	CurrentCharacterCtrlype = ECharacterCtrlType::Quater;
@@ -59,6 +59,7 @@ void APACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(ThirdMoveAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::ThirdMove);
 		EnhancedInputComponent->BindAction(ThirdLookAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::ThirdLook);
 		EnhancedInputComponent->BindAction(QuaterMoveAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::QuaterMove);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::Attack);
 	}
 }
 
@@ -181,6 +182,11 @@ void APACharacterPlayer::SetInputAction()
 	{
 		QuaterMoveAction = InputActionQuaterMoveRef.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionChudanAttackRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_ChudanAttack.IA_ChudanAttack'"));
+	if (InputActionChudanAttackRef.Object)
+	{
+		AttackAction = InputActionChudanAttackRef.Object;
+	}
 }
 
 void APACharacterPlayer::ThirdMove(const FInputActionValue& InPutValue)
@@ -225,3 +231,7 @@ void APACharacterPlayer::QuaterMove(const FInputActionValue& InPutValue)
 	AddMovementInput(MoveDirection, MovementVectorSize);
 }
 
+void APACharacterPlayer::Attack(const FInputActionValue& InPutValue)
+{
+	ProcessComboCommand();
+}

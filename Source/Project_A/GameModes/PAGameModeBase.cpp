@@ -14,7 +14,10 @@ APAGameModeBase::APAGameModeBase()
 	//static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Game/Ninja_Anims/Demo/Mannequin/Character/Mesh/BP_Ninja_Mann_2.BP_Ninja_Mann_2_C"));
 
 	//static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Game/PA/Characters/Blueprints/BP_ThirdPersonPhase_2.BP_ThirdPersonPhase_2_C"));
-	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Script/Project_A.PACharacterPlayer"));
+	//static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(TEXT("/Script/Project_A.PACharacterPlayer"));
+
+	FString BP_PlayerPath = TEXT("/Script/Engine.Blueprint'/Game/PA/Characters/Blueprints/BP_PACharacterPlayer.BP_PACharacterPlayer_C'");
+	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassRef(*BP_PlayerPath);
 	if (DefaultPawnClassRef.Class)
 	{
 		DefaultPawnClass = DefaultPawnClassRef.Class;

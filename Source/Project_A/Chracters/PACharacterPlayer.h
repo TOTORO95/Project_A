@@ -72,11 +72,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
 	TObjectPtr<class UInputAction> QuaterMoveAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
+	TObjectPtr<class UInputAction> AttackAction;
+
 	void SetInputAction();
 	void ThirdMove(const FInputActionValue& InPutValue);
 	void ThirdLook(const FInputActionValue& InPutValue);
-
 	void QuaterMove(const FInputActionValue& InPutValue);
+	void Attack(const FInputActionValue& InPutValue);
 
 	ECharacterCtrlType CurrentCharacterCtrlype;
 };
