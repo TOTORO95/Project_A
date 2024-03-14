@@ -22,20 +22,6 @@ APACharacterPlayer::APACharacterPlayer()
 	SetupCamera();
 	SetupControlDataAsset();
 
-	// FString BP_PlayerPath = TEXT("/Script/Engine.Blueprint'/Game/PA/Characters/Blueprints/BP_PACharacterPlayer.BP_PACharacterPlayer_C'");
-	// static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(*BP_PlayerPath);
-	// if (CharacterMeshRef.Object)
-	//{
-	//	GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
-	// }
-
-	// FString MaleAnimInstancePath = TEXT("/Game/PA/Characters/Animations/ABP_MnqNinja_AnimInstance.ABP_MnqNinja_AnimInstance_C");
-	// static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(*MaleAnimInstancePath);
-	// if (AnimInstanceRef.Class)
-	//{
-	//	GetMesh()->SetAnimInstanceClass(AnimInstanceRef.Class);
-	// }
-
 	SetInputAction();
 	CurrentCharacterCtrlype = ECharacterCtrlType::Quater;
 }
@@ -55,11 +41,13 @@ void APACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	{
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::Sprint);
 		EnhancedInputComponent->BindAction(ChangeCtrlAciton, ETriggerEvent::Completed, this, &APACharacterPlayer::ChangeCharacterCtrl);
 		EnhancedInputComponent->BindAction(ThirdMoveAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::ThirdMove);
 		EnhancedInputComponent->BindAction(ThirdLookAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::ThirdLook);
 		EnhancedInputComponent->BindAction(QuaterMoveAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::QuaterMove);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::Attack);
+
 	}
 }
 
@@ -187,6 +175,11 @@ void APACharacterPlayer::SetInputAction()
 	{
 		AttackAction = InputActionChudanAttackRef.Object;
 	}
+}
+
+void APACharacterPlayer::Sprint(const FInputActionValue& InPutValue)
+{
+	
 }
 
 void APACharacterPlayer::ThirdMove(const FInputActionValue& InPutValue)

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Animation/AnimInstance.h"
+#include "Components/IKFootActorComponent.h"
 #include "CoreMinimal.h"
 
 #include "PAAnimInstance.generated.h"
@@ -47,4 +48,21 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
 	float JumpingThreshould;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	uint8 bIsSprint : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
+	uint8 bIsWalk : 1;
+
+//IK Section
+private:
+	void InitIKFootComponent();
+	void UpdateIKFootAnimData();
+
+	UPROPERTY()
+	class UIKFootActorComponent* IKFootComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "IKFootData", meta = (AllowPrivateAccess = "true"))
+	FST_IKFootData IKAnimData;
 };

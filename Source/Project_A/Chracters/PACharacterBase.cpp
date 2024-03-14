@@ -4,9 +4,10 @@
 
 #include "Animation/AnimMontage.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/IKFootActorComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "PAComboAttackDataAsset.h"
 #include "PACharacterCtrlDataAsset.h"
+#include "PAComboAttackDataAsset.h"
 #include "Project_A.h"
 
 // Sets default values
@@ -50,12 +51,12 @@ void APACharacterBase::InitCharacterComponent()
 	// static ConstructorHelpers::FClassFinder<APawn> BlueprintClassRef(*BP_PlayerPath);
 	// if (BlueprintClassRef.Class)
 	//{
-	//	 
+	//
 	//	 //GetMesh()->SetSkeletalMesh(BlueprintClassRef.Class);
 	// }
-
+	FString IKNinjaAnimInstancePath = TEXT("/Script/Engine.AnimBlueprint'/Game/PA/Characters/Animations/ABP_IKMnqNinja_AnimInstance.ABP_IKMnqNinja_AnimInstance_C'");
 	FString NinjaAnimInstancePath = TEXT("/Game/PA/Characters/Animations/ABP_MnqNinja_AnimInstance.ABP_MnqNinja_AnimInstance_C");
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(*NinjaAnimInstancePath);
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(*IKNinjaAnimInstancePath);
 	if (AnimInstanceRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceRef.Class);
@@ -64,6 +65,9 @@ void APACharacterBase::InitCharacterComponent()
 	InitControllerRotation();
 	InitCollisionCompoent();
 	InitMovementComponent();
+
+	IKFootComponent = CreateDefaultSubobject<UIKFootActorComponent>(TEXT("IKFootComponent"));
+	IKFootComponent->Set_IKSocketName(TEXT("foot_l"), TEXT("foot_r"));
 }
 
 void APACharacterBase::InitControllerRotation()
@@ -142,13 +146,13 @@ void APACharacterBase::SetComboCheckTimer()
 	const float AttackSpeedRate = 1.f;
 	float ComboEffectiveFrame = ComboActionDataAsset->EffectiveFrameCount[ComboIndex];
 
-	//UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	//float CurrentPlayRate = AnimInstance->GetActiveMontageInstance()->GetPlayRate();
+	// UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	// float CurrentPlayRate = AnimInstance->GetActiveMontageInstance()->GetPlayRate();
 
 	float ComboFrameRate = ComboActionDataAsset->FrameRate;
-	
+
 	float ComboEffectiveTime = (ComboEffectiveFrame / ComboFrameRate) / AttackSpeedRate;
-	PA_LOG(LogPANetwork, Log, TEXT("ComboEffectiveTime = %f"), ComboEffectiveTime);				
+	PA_NETLOG(LogPANetwork, Log, TEXT("ComboEffectiveTime = %f"), ComboEffectiveTime);
 
 	if (ComboEffectiveTime > 0.f)
 	{

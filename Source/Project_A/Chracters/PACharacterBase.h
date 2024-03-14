@@ -50,4 +50,9 @@ protected:
 	int32 CurrentCombo = 0;
 	FTimerHandle ComboTimerHandle;
 	bool HasNextComboCommand = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "IK_Foot", meta = (AllowPrivateAccess = "true"))
+	class UIKFootActorComponent* IKFootComponent;
+
+	
 };

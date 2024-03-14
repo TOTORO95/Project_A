@@ -64,6 +64,9 @@ protected:
 	TObjectPtr<class UInputAction> JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
+	TObjectPtr<class UInputAction> SprintAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
 	TObjectPtr<class UInputAction> ThirdMoveAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
@@ -76,10 +79,10 @@ protected:
 	TObjectPtr<class UInputAction> AttackAction;
 
 	void SetInputAction();
+	void Sprint(const FInputActionValue& InPutValue);
 	void ThirdMove(const FInputActionValue& InPutValue);
 	void ThirdLook(const FInputActionValue& InPutValue);
 	void QuaterMove(const FInputActionValue& InPutValue);
 	void Attack(const FInputActionValue& InPutValue);
-
 	ECharacterCtrlType CurrentCharacterCtrlype;
 };

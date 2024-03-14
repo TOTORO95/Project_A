@@ -32,7 +32,7 @@ APAGameModeBase::APAGameModeBase()
 }
 void APAGameModeBase::StartPlay()
 {
-	PA_LOG(LogPANetwork, Log, TEXT("%s"), TEXT("Begin"));
+	PA_NETLOG(LogPANetwork, Log, TEXT("%s"), TEXT("Begin"));
 	Super::StartPlay();
 }
 

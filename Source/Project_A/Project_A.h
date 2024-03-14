@@ -15,12 +15,12 @@
 
 #define LOG_CALLINFO ANSI_TO_TCHAR(__FUNCTION__)
 
-#define PA_LOG(LogCat, Verbosity, Format, ...)                                                                                 \
-	UE_LOG(LogCat, Verbosity, TEXT("[%s][%s/%s] %s %s"), LOG_NETMODEINFO, LOG_LOCALROLEINFO, LOG_REMOTEROLEINFO, LOG_CALLINFO, \
-		*FString::Printf(Format, ##__VA_ARGS__))
+#define PA_LOG(LogCat, Verbosity, Format, ...) \
+	UE_LOG(LogCat, Verbosity, TEXT("%s %s"), LOG_CALLINFO, *FString::Printf(Format, ##__VA_ARGS__))
 
-#define PA_LOG2(LogCat, Verbosity, Format, ...)                                                              \
-	UE_LOG(LogCat, Verbosity, TEXT("[%s][%s/%s]%s"), LOG_NETMODEINFO, LOG_LOCALROLEINFO, LOG_REMOTEROLEINFO, \
+
+#define PA_NETLOG(LogCat, Verbosity, Format, ...)                                                                                 \
+	UE_LOG(LogCat, Verbosity, TEXT("[%s][%s/%s] %s %s"), LOG_NETMODEINFO, LOG_LOCALROLEINFO, LOG_REMOTEROLEINFO, LOG_CALLINFO, \
 		*FString::Printf(Format, ##__VA_ARGS__))
 
 #define AB_SUBLOG(LogCat, Verbosity, Format, ...)                                                                      \
