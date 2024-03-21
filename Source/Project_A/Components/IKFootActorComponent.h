@@ -54,14 +54,12 @@ private:
 	FST_IKFootData PrevIKFootData;
 
 	UPROPERTY(EditAnywhere, Category = "IKFootComponent")
-	float IgnoreIkFootValue = 0.0f;
+	float IgnoreIkFootValue;
 
 	UPROPERTY(EditAnywhere, Category = "IKFootComponent")
-	float IgnoreIkHipValue = 0.0f;
+	float IgnoreIkHipValue;
 
-	// IK Active state
-	bool bIsActive = false;
-	float IkDeltaTime = 0.0f;
+	float IkDeltaTime;
 
 public:
 	// Left foot bone name
@@ -89,7 +87,7 @@ public:
 
 	// Enable debug mode
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IKFootComponent")
-	bool bIsDebug;
+	uint8 bIsDebug : 1;
 
 public:
 	UIKFootActorComponent();
@@ -101,9 +99,6 @@ public:
 
 	// Reset IK State
 	void IK_ResetVars();
-
-	// Set IK Active state
-	void SetIKActive(bool InbActive);
 
 	// Set IK Debug state
 	void SetIKDebug(bool InbDebug);
@@ -124,7 +119,7 @@ public:
 	{
 		return IKFootData;
 	}
-	FORCEINLINE bool GetIKDebugState()
+	FORCEINLINE bool GetIKDebugState() const
 	{
 		return bIsDebug;
 	}

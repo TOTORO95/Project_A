@@ -34,7 +34,7 @@ public:
 
 public:
 	// Character Control
-	void ChangeCharacterCtrl();
+	void ChangeCharacterControl();
 	void SetCharacterCtrl(ECharacterCtrlType InCharacterControlType);
 
 	void SetCharacterCtrlData(const class UPACharacterCtrlDataAsset* InCharacterCtrlDataAsset);

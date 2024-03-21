@@ -9,7 +9,7 @@ UPAAnimInstance::UPAAnimInstance()
 {
 	GroundSpeed = 0.0f;
 	IKFootComponent = nullptr;
-	bIsFalling =false;
+	bIsFalling = false;
 	bIsIdle = true;
 	bIsJumping = false;
 	MovingThreshould = 3.0f;
@@ -20,11 +20,13 @@ void UPAAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 	Owner = Cast<ACharacter>(GetOwningActor());
-	if (Owner)
+	if (!Owner)
 	{
-		Movement = Owner->GetCharacterMovement();
-		InitIKFootComponent();
+		return;
 	}
+
+	Movement = Owner->GetCharacterMovement();
+	InitIKFootComponent();
 }
 
 void UPAAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -40,6 +42,7 @@ void UPAAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 	if (IKFootComponent)
 	{
+		IKFootComponent->SetActive(bIsIkActive);
 		UpdateIKFootAnimData();
 	}
 }
@@ -49,7 +52,6 @@ void UPAAnimInstance::InitIKFootComponent()
 	UActorComponent* ActorComponent = Owner->GetComponentByClass(UIKFootActorComponent::StaticClass());
 	if (ActorComponent)
 	{
-		// UActorComponent* ActorComponent = PawnOwner->GetComponentByClass(UIKFootActorComponent::StaticClass());
 		IKFootComponent = Cast<UIKFootActorComponent>(ActorComponent);
 		if (IKFootComponent == nullptr)
 		{
