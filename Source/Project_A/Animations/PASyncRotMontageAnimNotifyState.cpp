@@ -20,7 +20,6 @@ void UPASyncRotMontageAnimNotifyState::NotifyTick(USkeletalMeshComponent* MeshCo
 	{
 		return;
 	 }
-	Player->SyncRotate();
 }
 
 void UPASyncRotMontageAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)

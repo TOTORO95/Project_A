@@ -112,35 +112,36 @@ protected:
 	void SetInputAction();
 	void SetMontageTable();
 
-	void ChageCombatMode(const FInputActionValue& InPutValue);
-	void Sprint(const FInputActionValue& InPutValue);
+	void ChangeCombatMode(const FInputActionValue& InPutValue);
 	void ThirdMove(const FInputActionValue& InPutValue);
 	void ThirdLook(const FInputActionValue& InPutValue);
 	void QuaterMove(const FInputActionValue& InPutValue);
 	void LightAttack(const FInputActionValue& InPutValue);
 	void HeavyAttack(const FInputActionValue& InPutValue);
 
+	void SprintStart(const FInputActionValue& InPutValue);
+	void SprintEnd(const FInputActionValue& InPutValue);
+	void MoveStart();
 
-	void WalkStart();
 public:
-	void SyncRotate();
-	void Walk();
-	//void Walk(UAnimMontage* Montage, bool bInterrupted);
+	void Move();
+	void MoveEnd();
 
-	void WalkEnd();
+	void MountingWeapon();
+	void ReleaseWeapon();
 
 	void EquipWeaponStart();
 	void EquipWeapon();
 	void EquipWeaponEnd();
 	void CrouchStart();
 	void CrouchEnd();
-
-	// void PunchAttack();
-	// void KickAttack();
-	// void AttackInput(EAttackType AttackType);
-	// void WeaponInput(EWeaponType WeaponType);
-	// void AttackStart();
-	// void AttackEnd();
+	void SetupKatana();	   // TestCode
+						   // void PunchAttack();
+						   // void KickAttack();
+						   // void AttackInput(EAttackType AttackType);
+						   // void WeaponInput(EWeaponType WeaponType);
+						   // void AttackStart();
+						   // void AttackEnd();
 
 	// void LightAttackStart();
 	// void LightAttackEnd();
@@ -193,8 +194,13 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
 	class UDataTable* MovementDataTable;
 
+	TArray<UAnimMontage*> MovementMontageArray;
 	FMovementMontage* WalkMontage;
-	FOnMontageEnded WalkEndDeletage;
+	FMovementMontage* SprintMontage;
+	FMovementMontage* CombatWalkMontage;
+	FMovementMontage* CombatSprintMontage;
+
+	FString CurrentMoveMontageSection;
 
 #pragma endregion
 
@@ -216,6 +222,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Animation)
 	bool IsDodge();
 
+	void SetNextAttackPossible(bool InNextAttackPossible, uint8 inCurrentAttackIndex);
+	bool IsNextAttackPossible();
+	bool GetNextAttackInput();
+	void InitNextAttackInput();
+	void StartNextAttack();
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseTurnRate;
@@ -224,14 +235,19 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookUpRate;
 
+	UStaticMeshComponent* KatanaSwordSocket;
+	UStaticMeshComponent* KatanaSheathSocket;
+	UStaticMeshComponent* KatanaSheathInSocket;
+
 private:
+
 	UAudioComponent* PunchAudioComponent;
 	FPlayerAttackMontage* AttackMontage;
 	FMeleeCollisionProfile MeleeCollisionProfile;
 	EAttackType CurrentAttack;
 	EWeaponType CurrentWeaponType;
 	EAttackStrength CurrentAttackStrength;
-
+	
 	uint8 bIsAnimationBlended : 1;
 	uint8 bIsKeyboardEnabled : 1;
 	uint8 bIsLightAttack : 1;
@@ -240,6 +256,10 @@ private:
 	uint8 bIsCombatMode : 1;
 	uint8 bIsSprint : 1;
 	uint8 bIsDodge : 1;
+	uint8 bIsNextAttackPossible : 1;
+	uint8 bIsNextAttackInput : 1;
+
+	int32 CurrentAttackIndx;
 
 	FTimerHandle CombatToIdleTimerHandle;
 
