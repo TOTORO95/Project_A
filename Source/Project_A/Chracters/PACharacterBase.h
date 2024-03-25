@@ -27,13 +27,13 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	/* Deprecated Code	*/
 protected:
 	virtual void InitCharacterComponent();
 	virtual void InitControllerRotation();
 	virtual void InitCollisionCompoent();
 	virtual void InitMovementComponent();
 
-	// Attack Section
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AnimationMontage)
 	TObjectPtr<class UAnimMontage> ComboActionMontage;
@@ -50,9 +50,8 @@ protected:
 	int32 CurrentCombo = 0;
 	FTimerHandle ComboTimerHandle;
 	bool HasNextComboCommand = false;
+	/* Deprecated Code	*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "IK_Foot", meta = (AllowPrivateAccess = "true"))
 	class UIKFootActorComponent* IKFootComponent;
-
-	
 };

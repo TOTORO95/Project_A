@@ -39,24 +39,16 @@ void APACharacterBase::InitCharacterComponent()
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -100.f), FRotator(0.f, -90.f, 0.f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
-
-	FString UE5MnqMeshPath = TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'");
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(*UE5MnqMeshPath);
+	
+	FString UE5DefaultMeshPath = TEXT("/Script/Engine.SkeletalMesh'/Game/PA/Characters/Samuri/SKM_PA_Samuri.SKM_PA_Samuri'");
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(*UE5DefaultMeshPath);
 	if (CharacterMeshRef.Object)
 	{
 		GetMesh()->SetSkeletalMesh(CharacterMeshRef.Object);
 	}
 
-	// FString BP_PlayerPath = TEXT("/Script/Engine.Blueprint'/Game/PA/Characters/Blueprints/BP_PACharacterPlayer.BP_PACharacterPlayer_C'");
-	// static ConstructorHelpers::FClassFinder<APawn> BlueprintClassRef(*BP_PlayerPath);
-	// if (BlueprintClassRef.Class)
-	//{
-	//
-	//	 //GetMesh()->SetSkeletalMesh(BlueprintClassRef.Class);
-	// }
-	FString IKNinjaAnimInstancePath = TEXT("/Script/Engine.AnimBlueprint'/Game/PA/Characters/Animations/ABP_IKMnqNinja_AnimInstance.ABP_IKMnqNinja_AnimInstance_C'");
-	FString NinjaAnimInstancePath = TEXT("/Game/PA/Characters/Animations/ABP_MnqNinja_AnimInstance.ABP_MnqNinja_AnimInstance_C");
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(*IKNinjaAnimInstancePath);
+	FString IKDefaultAnimInstancePath = TEXT("/Script/Engine.AnimBlueprint'/Game/PA/Characters/General/ABP_IKGenAnim.ABP_IKGenAnim_C'");
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(*IKDefaultAnimInstancePath);
 	if (AnimInstanceRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceRef.Class);
@@ -110,7 +102,6 @@ void APACharacterBase::ProcessComboCommand()
 	{
 		HasNextComboCommand = true;
 	}
-	// HasNextComboCommand = ComboTimerHandle.IsValid();
 }
 
 void APACharacterBase::ComboActionBegin()
@@ -145,9 +136,6 @@ void APACharacterBase::SetComboCheckTimer()
 	ensure(ComboActionDataAsset->EffectiveFrameCount.IsValidIndex(ComboIndex));
 	const float AttackSpeedRate = 1.f;
 	float ComboEffectiveFrame = ComboActionDataAsset->EffectiveFrameCount[ComboIndex];
-
-	// UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	// float CurrentPlayRate = AnimInstance->GetActiveMontageInstance()->GetPlayRate();
 
 	float ComboFrameRate = ComboActionDataAsset->FrameRate;
 

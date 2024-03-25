@@ -34,8 +34,8 @@ void UIKFootActorComponent::BeginPlay()
 		return;
 	}
 	IKCapsuleHalfHeight = Character->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-	SetIKActive(true);
 }
+
 void UIKFootActorComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
@@ -46,9 +46,7 @@ void UIKFootActorComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void UIKFootActorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (Character == nullptr)
-		return;
-	if (bIsActive == false)
+	if (!Character || !IsActive())
 		return;
 
 	IK_Update(DeltaTime);
@@ -244,11 +242,6 @@ void UIKFootActorComponent::CheckIgnoreValue(FST_IKFootData& InPrevValue, FST_IK
 	Func(InPrevValue.DistanceRequired_Left, InCurValue.DistanceRequired_Left, true);
 	Func(InPrevValue.DistanceRequired_Right, InCurValue.DistanceRequired_Right, true);
 	Func(InPrevValue.RequiredOffset_Hip, InCurValue.RequiredOffset_Hip, false);
-}
-
-void UIKFootActorComponent::SetIKActive(bool InbActive)
-{
-	bIsActive = InbActive;
 }
 
 FRotator UIKFootActorComponent::NormalToRotator(FVector InVector)

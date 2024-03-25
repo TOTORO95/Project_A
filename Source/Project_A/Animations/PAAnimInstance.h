@@ -16,6 +16,7 @@ class PROJECT_A_API UPAAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 
+public:
 	UPAAnimInstance();
 
 protected:
@@ -49,13 +50,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
 	float JumpingThreshould;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
-	uint8 bIsSprint : 1;
+	// IK Section
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FootIKComponent)
+	uint8 bIsIkActive : 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Character)
-	uint8 bIsWalk : 1;
-
-//IK Section
 private:
 	void InitIKFootComponent();
 	void UpdateIKFootAnimData();

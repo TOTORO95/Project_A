@@ -13,6 +13,7 @@
 #include "InputAction.h"
 #include "InputActionValue.h"
 #include "InputMappingContext.h"
+#include "Items/PAWeaponPrimaryDataAsset.h"
 #include "Net/UnrealNetwork.h"
 #include "PACharacterCtrlDataAsset.h"
 #include "Project_A.h"
@@ -42,12 +43,11 @@ void APACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::Sprint);
-		EnhancedInputComponent->BindAction(ChangeCtrlAciton, ETriggerEvent::Completed, this, &APACharacterPlayer::ChangeCharacterCtrl);
+		EnhancedInputComponent->BindAction(ChangeCtrlAciton, ETriggerEvent::Completed, this, &APACharacterPlayer::ChangeCharacterControl);
 		EnhancedInputComponent->BindAction(ThirdMoveAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::ThirdMove);
 		EnhancedInputComponent->BindAction(ThirdLookAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::ThirdLook);
 		EnhancedInputComponent->BindAction(QuaterMoveAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::QuaterMove);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &APACharacterPlayer::Attack);
-
 	}
 }
 
@@ -78,7 +78,7 @@ void APACharacterPlayer::SetupCamera()
 	FollowCamera->bUsePawnControlRotation = false;
 }
 
-void APACharacterPlayer::ChangeCharacterCtrl()
+void APACharacterPlayer::ChangeCharacterControl()
 {
 	switch (CurrentCharacterCtrlype)
 	{
@@ -144,6 +144,7 @@ void APACharacterPlayer::SetCharacterCtrlData(const UPACharacterCtrlDataAsset* I
 
 void APACharacterPlayer::SetInputAction()
 {
+	
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/PA/Input/Actions/IA_Jump.IA_Jump'"));
 	if (InputActionJumpRef.Object)
 	{
