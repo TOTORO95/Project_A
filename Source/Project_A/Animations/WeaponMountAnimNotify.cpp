@@ -2,25 +2,26 @@
 
 
 #include "Animations/WeaponMountAnimNotify.h"
-#include "Chracters/PAPlayerRMCharacter.h"
+#include "Chracters/PACharacterBase.h"
+
 #include "Project_A.h"
 
 void UWeaponMountAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
 
-	APAPlayerRMCharacter* Player = Cast<APAPlayerRMCharacter>(MeshComp->GetOwner());
-	if (!Player)
+	APACharacterBase* Character = Cast<APACharacterBase>(MeshComp->GetOwner());
+	if (!Character)
 	{
 		return;
 	}
 
 	if (WeaponMounting)
 	{
-		Player->MountingWeapon();
+		Character->MountingWeapon();
 	}
 	else
 	{
-		Player->ReleaseWeapon();	
+		Character->ReleaseWeapon();	
 	}
 }

@@ -9,7 +9,6 @@ void UPAPlayAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnim
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 	PA_LOG(LogTemp, Log, TEXT("Begin"));
-
 	APAPlayerRMCharacter* Player = Cast<APAPlayerRMCharacter>(MeshComp->GetOwner());
 	if (!Player)
 	{
@@ -18,28 +17,3 @@ void UPAPlayAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnim
 	Player->Move();
 }
 
-void UPAPlayAnimNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
-{
-	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
-}
-
-void UPAPlayAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
-{
-	Super::NotifyEnd(MeshComp, Animation, EventReference);
-	PA_LOG(LogTemp, Log, TEXT("End"));
-
-	// APAPlayerRMCharacter* Player = Cast<APAPlayerRMCharacter>(MeshComp->GetOwner());
-	// if (!Player)
-	//{
-	//	return;
-	// }
-}
-
-USkeletalMeshComponent* UPAPlayAnimNotifyState::GetMeshComponent(USkeletalMeshComponent* MeshComp)
-{
-	if (!MeshComp && !MeshComp->GetOwner())
-	{
-		return nullptr;
-	}
-	return MeshComp;
-}

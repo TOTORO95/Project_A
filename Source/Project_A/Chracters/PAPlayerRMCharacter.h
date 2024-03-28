@@ -116,8 +116,8 @@ protected:
 	void ThirdMove(const FInputActionValue& InPutValue);
 	void ThirdLook(const FInputActionValue& InPutValue);
 	void QuaterMove(const FInputActionValue& InPutValue);
-	void LightAttack(const FInputActionValue& InPutValue);
-	void HeavyAttack(const FInputActionValue& InPutValue);
+	void InputAttack(const FInputActionValue& InPutValue);
+	void BeginComboAttack();
 
 	void SprintStart(const FInputActionValue& InPutValue);
 	void SprintEnd(const FInputActionValue& InPutValue);
@@ -127,8 +127,8 @@ public:
 	void Move();
 	void MoveEnd();
 
-	void MountingWeapon();
-	void ReleaseWeapon();
+	virtual void MountingWeapon() override;
+	virtual void ReleaseWeapon() override;
 
 	void EquipWeaponStart();
 	void EquipWeapon();
@@ -147,6 +147,7 @@ public:
 	// void LightAttackEnd();
 	// void StrongAttackStart();
 	// void StrongAttackEnd();
+	void NextComboAttack();
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
@@ -194,6 +195,10 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
 	class UDataTable* MovementDataTable;
 
+	UPROPERTY(EditAnywhere, Category = Animation)
+	FName AttackRowKey = TEXT("Katana_4");
+
+
 	TArray<UAnimMontage*> MovementMontageArray;
 	FMovementMontage* WalkMontage;
 	FMovementMontage* SprintMontage;
@@ -222,11 +227,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Animation)
 	bool IsDodge();
 
-	void SetNextAttackPossible(bool InNextAttackPossible, uint8 inCurrentAttackIndex);
+	void SetNextAttackPossible(bool InNextAttackPossible);
 	bool IsNextAttackPossible();
-	bool GetNextAttackInput();
-	void InitNextAttackInput();
-	void StartNextAttack();
+	bool IsNextAttackInput();
+	void SetNextAttackInput(bool InNextAttackInput);
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseTurnRate;
@@ -235,9 +239,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookUpRate;
 
+
 	UStaticMeshComponent* KatanaSwordSocket;
 	UStaticMeshComponent* KatanaSheathSocket;
 	UStaticMeshComponent* KatanaSheathInSocket;
+
 
 private:
 
@@ -259,7 +265,7 @@ private:
 	uint8 bIsNextAttackPossible : 1;
 	uint8 bIsNextAttackInput : 1;
 
-	int32 CurrentAttackIndx;
+	int32 CurrentAttackIndex;
 
 	FTimerHandle CombatToIdleTimerHandle;
 
@@ -362,7 +368,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
 	float AnimationVariable;
-
-	void Log(EPALogTpye InLogLevel, FString InMessage);
-	void Log(EPALogTpye InLogLevel, FString InMessage, EPALogOutput InLogOutput);
 };

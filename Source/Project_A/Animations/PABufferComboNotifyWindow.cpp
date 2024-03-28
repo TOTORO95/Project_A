@@ -1,18 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Animations/PAComboAttackNotifyState.h"
+
+#include "Animations/PABufferComboNotifyWindow.h"
+
 
 #include "Chracters/PAPlayerRMCharacter.h"
 #include "Project_A.h"
 
-void UPAComboAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
+void UPABufferComboNotifyWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 	if (!MeshComp)
 	{
 		return;
 	}
-
 	Player = Cast<APAPlayerRMCharacter>(MeshComp->GetOwner());
 	if (!Player)
 	{
@@ -22,7 +23,7 @@ void UPAComboAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UA
 	Player->SetNextAttackPossible(true);
 }
 
-void UPAComboAttackNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
+void UPABufferComboNotifyWindow::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
 	if (!MeshComp || !Player)
@@ -34,20 +35,26 @@ void UPAComboAttackNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAn
 	{
 		bIsPlayerNextAttack = Player->IsNextAttackInput();
 	}
-	else
+	else 
 	{
-		Player->NextComboAttack();
+		PA_LOG(LogTemp, Log, TEXT("Add Success: Buffer NextAttack!!!"));	
 	}
 }
 
-void UPAComboAttackNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
+void UPABufferComboNotifyWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
 	if (!MeshComp || !Player)
 	{
 		return;
 	}
-	if (!bIsPlayerNextAttack)
+
+	if (bIsPlayerNextAttack)
+	{
+		PA_LOG(LogTemp, Log, TEXT("Start Buffer NextAttack!!!"));
+		Player->NextComboAttack();
+	}
+	else
 	{
 		Player->SetNextAttackPossible(false);
 	}

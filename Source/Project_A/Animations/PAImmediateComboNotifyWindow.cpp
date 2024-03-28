@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Animations/PAComboAttackNotifyState.h"
 
+#include "Animations/PAImmediateComboNotifyWindow.h"
 #include "Chracters/PAPlayerRMCharacter.h"
 #include "Project_A.h"
 
-void UPAComboAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
+void UPAImmediateComboNotifyWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 	if (!MeshComp)
@@ -22,7 +22,7 @@ void UPAComboAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UA
 	Player->SetNextAttackPossible(true);
 }
 
-void UPAComboAttackNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
+void UPAImmediateComboNotifyWindow::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyTick(MeshComp, Animation, FrameDeltaTime, EventReference);
 	if (!MeshComp || !Player)
@@ -40,7 +40,7 @@ void UPAComboAttackNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAn
 	}
 }
 
-void UPAComboAttackNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
+void UPAImmediateComboNotifyWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
 	if (!MeshComp || !Player)

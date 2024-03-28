@@ -55,7 +55,7 @@ APAPlayerRMCharacter::APAPlayerRMCharacter()
 	SetInputAction();
 	CurrentCharacterControlType = ECharacterControlType::Third;
 	SetupKatana();
-	CurrentAttackIndx = 0;
+	CurrentAttackIndex = 0;
 	bIsNextAttackInput = false;
 }
 
@@ -87,7 +87,7 @@ void APAPlayerRMCharacter::BeginPlay()
 void APAPlayerRMCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Current Attack Index = %d"), CurrentAttackIndx));
+	// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Current Attack Index = %d"), CurrentAttackIndx));
 
 	// FireLineTrace();
 }
@@ -115,8 +115,8 @@ void APAPlayerRMCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 		EnhancedInputComponent->BindAction(QuaterMoveAction, ETriggerEvent::Triggered, this, &APAPlayerRMCharacter::QuaterMove);
 		EnhancedInputComponent->BindAction(ChangeCombatModeAciton, ETriggerEvent::Started, this, &APAPlayerRMCharacter::ChangeCombatMode);
 
-		EnhancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &APAPlayerRMCharacter::LightAttack);
-		EnhancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Triggered, this, &APAPlayerRMCharacter::HeavyAttack);
+		EnhancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &APAPlayerRMCharacter::InputAttack);
+		// EnhancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Triggered, this, &APAPlayerRMCharacter::HeavyAttack);
 	}
 
 	//// handle touch devices
@@ -222,14 +222,9 @@ bool APAPlayerRMCharacter::IsDodge()
 	return bIsDodge;
 }
 
-void APAPlayerRMCharacter::SetNextAttackPossible(bool InNextAttackPossible, uint8 inCurrentAttackIndex)
+void APAPlayerRMCharacter::SetNextAttackPossible(bool InNextAttackPossible)
 {
 	bIsNextAttackPossible = InNextAttackPossible;
-	// CurrentAttackIndx = inCurrentAttackIndex;
-	// if (!bIsNextAttackPossible)
-	//{
-	//	CurrentAttackIndx = 0;
-	// }
 }
 
 bool APAPlayerRMCharacter::IsNextAttackPossible()
@@ -237,22 +232,14 @@ bool APAPlayerRMCharacter::IsNextAttackPossible()
 	return bIsNextAttackPossible;
 }
 
-bool APAPlayerRMCharacter::GetNextAttackInput()
+bool APAPlayerRMCharacter::IsNextAttackInput()
 {
 	return bIsNextAttackInput;
 }
 
-void APAPlayerRMCharacter::InitNextAttackInput()
+void APAPlayerRMCharacter::SetNextAttackInput(bool InNextAttackInput)
 {
-	bIsNextAttackInput = false;
-}
-
-void APAPlayerRMCharacter::StartNextAttack()
-{
-	CurrentAttackIndx = FMath::Clamp(CurrentAttackIndx + 1, 0, AttackMontage->AnimSectionCount);
-	FString NextAttackIndex = FString::Printf(TEXT("LightAttack%02d_Start"), CurrentAttackIndx);
-	GetMesh()->GetAnimInstance()->Montage_Stop(0.1f, AttackMontage->Montage);
-	PlayAnimMontage(AttackMontage->Montage, 1.f, *NextAttackIndex);
+	bIsNextAttackInput = InNextAttackInput;
 }
 
 void APAPlayerRMCharacter::SetIsKeyboardEnabled(bool Enabled)
@@ -430,7 +417,7 @@ void APAPlayerRMCharacter::SetInputAction()
 	CheckFindFunc(ChangeCombatModeAciton, TEXT("ChangeCombatMode"));
 	CheckFindFunc(SprintAction, TEXT("Sprint"));
 	CheckFindFunc(LightAttackAction, TEXT("LightAttack"));
-	CheckFindFunc(HeavyAttackAction, TEXT("HeavyAttack"));
+	// CheckFindFunc(HeavyAttackAction, TEXT("HeavyAttack"));
 }
 
 void APAPlayerRMCharacter::SetMontageTable()
@@ -526,63 +513,66 @@ void APAPlayerRMCharacter::QuaterMove(const FInputActionValue& InPutValue)
 	AddMovementInput(MoveDirection, MovementVectorSize);
 }
 
-void APAPlayerRMCharacter::LightAttack(const FInputActionValue& InPutValue)
+void APAPlayerRMCharacter::InputAttack(const FInputActionValue& InPutValue)
 {
-	uint8 bIsLightAttackInput = InPutValue.Get<bool>();
-	//GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	bool bIsLightAttackInput = InPutValue.Get<bool>();
+	bUseControllerRotationYaw = false;	  // Animation에서 제어할예정
+	AttackMontage = PlayerAttackDataTable->FindRow<FPlayerAttackMontage>(AttackRowKey, "5", true);
 
-	bUseControllerRotationYaw = false;
-	FName RowKey = TEXT("Katana_4");
-	AttackMontage = PlayerAttackDataTable->FindRow<FPlayerAttackMontage>(RowKey, "5", true);
-	FString AttackSection = FString::Printf(TEXT("LightAttack%02d_Start"), CurrentAttackIndx);
-
-	// FString AttackSection = "LightAttack%02d_Start" + FString::FromInt(CurrentAttackIndx);
-
-	// 공격이 재생중인지?
-	if (GetMesh()->GetAnimInstance()->Montage_IsActive(AttackMontage->Montage))
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance->Montage_IsPlaying(AttackMontage->Montage))
 	{
-		PA_LOG(LogTemp, Log, TEXT("InCombozone Prev Check"));
-
-		bIsNextAttackInput = true;
-		// 콤보 존이면 다음 재생 준비
-		// if (IsNextAttackPossible())
-		//{
-		//	PA_LOG(LogTemp, Log, TEXT("Combozone Success Input!!!"));
-
-		//}
-		// else
-		//{
-		//	CurrentAttackIndx = 0;
-		//}
+		CurrentAttackIndex = 0;
 	}
-	else	// 첫번쨰공격 실행
+
+	if (CurrentAttackIndex == 0)
 	{
-		CurrentAttackIndx = 0;
-		FString InitAttackSection = FString::Printf(TEXT("LightAttack%02d_Start"), CurrentAttackIndx);
-		PlayAnimMontage(AttackMontage->Montage, 1.f, *InitAttackSection);
-		bIsNextAttackInput = false;
+		BeginComboAttack();
+	}
+	else
+	{
+		SetNextAttackInput(IsNextAttackPossible());
 	}
 }
 
-void APAPlayerRMCharacter::HeavyAttack(const FInputActionValue& InPutValue)
+void APAPlayerRMCharacter::BeginComboAttack()
 {
-	bUseControllerRotationYaw = false;
+	SetNextAttackInput(false);
+	FString InitAttackSection = FString::Printf(TEXT("~%02d_Start"), ++CurrentAttackIndex);
+	PlayAnimMontage(AttackMontage->Montage, 1.f, *InitAttackSection);
+}
+
+void APAPlayerRMCharacter::NextComboAttack()
+{
+	SetNextAttackPossible(false);
+	SetNextAttackInput(false);
+	CurrentAttackIndex = FMath::Clamp(CurrentAttackIndex + 1, 0, AttackMontage->AnimSectionCount);
+	FString NextAttackIndex = FString::Printf(TEXT("LightAttack%02d_Start"), CurrentAttackIndex);
+	GetMesh()->GetAnimInstance()->Montage_Stop(0.1f, AttackMontage->Montage);
+	PlayAnimMontage(AttackMontage->Montage, 1.f, *NextAttackIndex);
 }
 
 void APAPlayerRMCharacter::SprintStart(const FInputActionValue& InPutValue)
 {
 	bIsSprint = InPutValue.Get<bool>();
+	uint8 CurrentMovementState = bIsCombatMode * 2 + bIsSprint;
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	bool IsMovementMontage = false;
+
 	for (auto MovementMontage : MovementMontageArray)
 	{
 		if (!MovementMontage)
 		{
 			return;
 		}
-		if (!AnimInstance->Montage_IsPlaying(WalkMontage->Montage))
+		if (AnimInstance->Montage_IsPlaying(MovementMontage))
 		{
-			return;
+			IsMovementMontage = true;
 		}
+	}
+	if (!IsMovementMontage)
+	{
+		return;
 	}
 
 	FString MontageSection = AnimInstance->Montage_GetCurrentSection(GetCurrentMontage()).ToString();
@@ -593,27 +583,33 @@ void APAPlayerRMCharacter::SprintStart(const FInputActionValue& InPutValue)
 
 	if (GetCurrentMontage()->GetName().Find("Walk"))
 	{
-		PlayAnimMontage(SprintMontage->Montage, 1.f, FName(CurrentMoveMontageSection));
+		PlayAnimMontage(MovementMontageArray[CurrentMovementState], 1.f, FName(CurrentMoveMontageSection));
 	}
 }
 
 void APAPlayerRMCharacter::SprintEnd(const FInputActionValue& InPutValue)
 {
 	bIsSprint = InPutValue.Get<bool>();
-
+	uint8 CurrentMovementState = bIsCombatMode * 2 + bIsSprint;
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	bool IsMovementMontage = false;
 	for (auto MovementMontage : MovementMontageArray)
+
 	{
 		if (!MovementMontage)
 		{
 			return;
 		}
+		if (AnimInstance->Montage_IsPlaying(MovementMontage))
+		{
+			IsMovementMontage = true;
+		}
 	}
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (!AnimInstance->Montage_IsPlaying(WalkMontage->Montage) && !AnimInstance->Montage_IsPlaying(SprintMontage->Montage))
+
+	if (!IsMovementMontage)
 	{
 		return;
 	}
-
 	FString MontageSection = AnimInstance->Montage_GetCurrentSection(GetCurrentMontage()).ToString();
 	if (MontageSection.Find("End_") != INDEX_NONE)
 	{
@@ -622,19 +618,17 @@ void APAPlayerRMCharacter::SprintEnd(const FInputActionValue& InPutValue)
 
 	if (GetCurrentMontage()->GetName().Find("Sprint"))
 	{
-		PlayAnimMontage(WalkMontage->Montage, 1.f, FName(CurrentMoveMontageSection));
+		PlayAnimMontage(MovementMontageArray[CurrentMovementState], 1.f, FName(CurrentMoveMontageSection));
 	}
 }
 
 void APAPlayerRMCharacter::MoveStart()
 {
-	PA_LOG(LogTemp, Log, TEXT("MoveStart() In"));
-	CurrentMoveMontageSection = TEXT("Start_Start");
+	uint8 CurrentMovementState = bIsCombatMode * 2 + bIsSprint;
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	CurrentMoveMontageSection = TEXT("Start_Start");
 
-	uint8 CurrentMovementState = uint8(bIsCombatMode) * 2 + uint8(bIsSprint);
 	PA_LOG(LogTemp, Log, TEXT("Current Playing Montage State = %d"), CurrentMovementState);
-
 	if (FName(CurrentMoveMontageSection) == AnimInstance->Montage_GetCurrentSection(MovementMontageArray[CurrentMovementState]))
 	{
 		PA_LOG(LogTemp, Log, TEXT("이미 Start Anim 재생 중....."));
@@ -647,9 +641,7 @@ void APAPlayerRMCharacter::Move()
 {
 	CurrentMoveMontageSection = TEXT("Loop_Start");
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	UAnimMontage* CurrentMontage = AnimInstance->GetCurrentActiveMontage();
-	UAnimMontage* NextMontage = nullptr;
-	uint8 CurrentMovementState = uint8(bIsCombatMode) * 2 + uint8(bIsSprint);
+	uint8 CurrentMovementState = bIsCombatMode * 2 + bIsSprint;
 	PA_LOG(LogTemp, Log, TEXT("Current Playing Montage State = %d"), CurrentMovementState);
 
 	if (FName(CurrentMoveMontageSection) == AnimInstance->Montage_GetCurrentSection(MovementMontageArray[CurrentMovementState]))
@@ -685,73 +677,9 @@ void APAPlayerRMCharacter::MountingWeapon()
 void APAPlayerRMCharacter::ReleaseWeapon()
 {
 	bIsCombatMode = false;
-	CurrentAttackIndx = 0;
+	CurrentAttackIndex = 0;
 	KatanaSwordSocket->SetVisibility(false);
 	KatanaSheathInSocket->SetVisibility(true);
-}
-
-void APAPlayerRMCharacter::Log(EPALogTpye InLogLevel, FString InMessage)
-{
-	Log(InLogLevel, InMessage, EPALogOutput::ALL);
-}
-
-void APAPlayerRMCharacter::Log(EPALogTpye InLogLevel, FString InMessage, EPALogOutput InLogOutput)
-{
-	// only print when screen is selected and the GEngine object is available
-	if ((InLogOutput == EPALogOutput::ALL || InLogOutput == EPALogOutput::SCREEN) && GEngine)
-	{
-		// default color
-		FColor LogColor = FColor::Cyan;
-		// flip the color based on the type
-		switch (InLogLevel)
-		{
-			case EPALogTpye::TRACE:
-				LogColor = FColor::Green;
-				break;
-			case EPALogTpye::DEBUG:
-				LogColor = FColor::Cyan;
-				break;
-			case EPALogTpye::INFO:
-				LogColor = FColor::White;
-				break;
-			case EPALogTpye::WARNING:
-				LogColor = FColor::Yellow;
-				break;
-			case EPALogTpye::ERROR:
-				LogColor = FColor::Red;
-				break;
-			default:
-				break;
-		}
-		// print the message and leave it on screen ( 4.5f controls the duration )
-		GEngine->AddOnScreenDebugMessage(-1, 4.5f, LogColor, InMessage);
-	}
-
-	if (InLogOutput == EPALogOutput::ALL || InLogOutput == EPALogOutput::OUTPUT_LOG)
-	{
-		// flip the message type based on error level
-		switch (InLogLevel)
-		{
-			case EPALogTpye::TRACE:
-				UE_LOG(LogTemp, VeryVerbose, TEXT("%s"), *InMessage);
-				break;
-			case EPALogTpye::DEBUG:
-				UE_LOG(LogTemp, Verbose, TEXT("%s"), *InMessage);
-				break;
-			case EPALogTpye::INFO:
-				UE_LOG(LogTemp, Log, TEXT("%s"), *InMessage);
-				break;
-			case EPALogTpye::WARNING:
-				UE_LOG(LogTemp, Warning, TEXT("%s"), *InMessage);
-				break;
-			case EPALogTpye::ERROR:
-				UE_LOG(LogTemp, Error, TEXT("%s"), *InMessage);
-				break;
-			default:
-				UE_LOG(LogTemp, Log, TEXT("%s"), *InMessage);
-				break;
-		}
-	}
 }
 
 void APAPlayerRMCharacter::OnAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

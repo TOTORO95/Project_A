@@ -86,6 +86,14 @@ void APACharacterBase::InitMovementComponent()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 }
 
+void APACharacterBase::MountingWeapon()
+{
+}
+
+void APACharacterBase::ReleaseWeapon()
+{
+}
+
 void APACharacterBase::ProcessComboCommand()
 {
 	if (CurrentCombo == 0)

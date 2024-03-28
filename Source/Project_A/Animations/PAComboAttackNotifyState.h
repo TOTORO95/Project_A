@@ -26,5 +26,6 @@ public:
 	uint8 NextAttackEnable : 1;
 
 	uint8 bIsPlayerNextAttack : 1;
-
+private:
+	TObjectPtr<class APAPlayerRMCharacter> Player;
 };

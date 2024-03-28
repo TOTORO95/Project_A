@@ -2,19 +2,17 @@
 
 #pragma once
 
-#include "Animation/AnimNotifies/AnimNotifyState.h"
 #include "CoreMinimal.h"
-
-#include "PACombaAttackAnimNotifyState.generated.h"
+#include "AnimNotifies/AnimNotify_PlayMontageNotify.h"
+#include "PABufferComboNotifyWindow.generated.h"
 
 /**
- *
+ * 
  */
 UCLASS()
-class PROJECT_A_API UPACombaAttackAnimNotifyState : public UAnimNotifyState
+class PROJECT_A_API UPABufferComboNotifyWindow : public UAnimNotify_PlayMontageNotifyWindow
 {
 	GENERATED_BODY()
-
 public:
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime, const FAnimNotifyEventReference& EventReference) override;
@@ -28,4 +26,7 @@ public:
 	uint8 NextAttackEnable : 1;
 
 	uint8 bIsPlayerNextAttack : 1;
+
+private:
+	TObjectPtr<class APAPlayerRMCharacter> Player;
 };

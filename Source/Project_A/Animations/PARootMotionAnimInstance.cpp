@@ -48,8 +48,6 @@ void UPARootMotionAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			bIsAnimationBlended = PlayerCharacter->IsAnimationBlended();
 			bIsEquipWeapon = PlayerCharacter->IsEquipWeapon();
 			bIsCombatMode = PlayerCharacter->IsCombatMode();
-			bIsCombatMode = PlayerCharacter->IsDodge();
-			bIsCombatMode = PlayerCharacter->IsSprint();
 			bIsMoving = CharacterSpeed > 0 ? true : false;
 
 			//PA_LOG(LogTemp, Log, TEXT("Character Velocity = %f %f %f"), CharacterVelocity.X, CharacterVelocity.Y, CharacterVelocity.Z);
