@@ -34,11 +34,9 @@ APAPlayerRMCharacter::APAPlayerRMCharacter()
 	// SetupSound();
 
 	SetMontageTable();
-	// load player attack montage data table
-	// /Script/Engine.DataTable'/Game/PA/Characters/Samuri/Animations/Attack/Samuri_CBADataTable.Samuri_CBADataTable'
 
 	// set animation blending on by default
-	bIsAnimationBlended = true;
+	SetAnimationBlended(false);
 	LineTraceType = ELineTraceType::CAMERA_SINGLE;
 	LineTraceDistance = 0.f;
 	CurrentAttackStrength = EAttackStrength::MEDIUM;
@@ -64,8 +62,8 @@ void APAPlayerRMCharacter::BeginPlay()
 	Super::BeginPlay();
 	SetCharacterControl(CurrentCharacterControlType);
 
-	LeftMeleeCollisionBox->OnComponentHit.AddDynamic(this, &APAPlayerRMCharacter::OnAttackHit);
-	RightMeleeCollisionBox->OnComponentHit.AddDynamic(this, &APAPlayerRMCharacter::OnAttackHit);
+	// LeftMeleeCollisionBox->OnComponentHit.AddDynamic(this, &APAPlayerRMCharacter::OnAttackHit);
+	// RightMeleeCollisionBox->OnComponentHit.AddDynamic(this, &APAPlayerRMCharacter::OnAttackHit);
 
 	// make sure our audio variables are initialized
 	if (PunchSoundCue && PunchAudioComponent)
@@ -99,14 +97,20 @@ void APAPlayerRMCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 	if (EnhancedInputComponent)
 	{
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(SpaceAction, ETriggerEvent::Started, this, &APAPlayerRMCharacter::StartSpaceAction);
+		EnhancedInputComponent->BindAction(SpaceAction, ETriggerEvent::Completed, this, &APAPlayerRMCharacter::CompleteSpaceAciton);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &APAPlayerRMCharacter::SprintStart);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &APAPlayerRMCharacter::SprintEnd);
+
+		EnhancedInputComponent->BindAction(ParryAction, ETriggerEvent::Started, this, &APAPlayerRMCharacter::Parry);
+
+		EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Started, this, &APAPlayerRMCharacter::Guard);
+		EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Completed, this, &APAPlayerRMCharacter::EndGuard);
 
 		EnhancedInputComponent->BindAction(ChangeControlAciton, ETriggerEvent::Completed, this, &APAPlayerRMCharacter::ChangeCharacterControl);
 		EnhancedInputComponent->BindAction(ThirdMoveAction, ETriggerEvent::Started, this, &APAPlayerRMCharacter::MoveStart);
 		EnhancedInputComponent->BindAction(ThirdMoveAction, ETriggerEvent::Triggered, this, &APAPlayerRMCharacter::ThirdMove);
+		EnhancedInputComponent->BindAction(ThirdMoveAction, ETriggerEvent::Triggered, this, &APAPlayerRMCharacter::Move);
 
 		EnhancedInputComponent->BindAction(ThirdMoveAction, ETriggerEvent::Completed, this, &APAPlayerRMCharacter::MoveEnd);
 
@@ -161,17 +165,17 @@ void APAPlayerRMCharacter::SetupCamera()
 
 void APAPlayerRMCharacter::SetupCollisionBox()
 {
-	LeftMeleeCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftMeleeCollisionBox"));
-	LeftMeleeCollisionBox->SetupAttachment(RootComponent);
-	LeftMeleeCollisionBox->SetCollisionProfileName(MeleeCollisionProfile.Disabled);
-	LeftMeleeCollisionBox->SetNotifyRigidBodyCollision(false);
-	LeftMeleeCollisionBox->SetHiddenInGame(false);
+	// LeftMeleeCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("LeftMeleeCollisionBox"));
+	// LeftMeleeCollisionBox->SetupAttachment(RootComponent);
+	// LeftMeleeCollisionBox->SetCollisionProfileName(MeleeCollisionProfile.Disabled);
+	// LeftMeleeCollisionBox->SetNotifyRigidBodyCollision(false);
+	// LeftMeleeCollisionBox->SetHiddenInGame(false);
 
-	RightMeleeCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightMeleeCollisionBox"));
-	RightMeleeCollisionBox->SetupAttachment(RootComponent);
-	RightMeleeCollisionBox->SetCollisionProfileName(MeleeCollisionProfile.Disabled);
-	RightMeleeCollisionBox->SetNotifyRigidBodyCollision(false);
-	RightMeleeCollisionBox->SetHiddenInGame(false);
+	// RightMeleeCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("RightMeleeCollisionBox"));
+	// RightMeleeCollisionBox->SetupAttachment(RootComponent);
+	// RightMeleeCollisionBox->SetCollisionProfileName(MeleeCollisionProfile.Disabled);
+	// RightMeleeCollisionBox->SetNotifyRigidBodyCollision(false);
+	// RightMeleeCollisionBox->SetHiddenInGame(false);
 }
 
 void APAPlayerRMCharacter::SetupSound()
@@ -200,6 +204,11 @@ void APAPlayerRMCharacter::SetupSound()
 bool APAPlayerRMCharacter::IsAnimationBlended()
 {
 	return bIsAnimationBlended;
+}
+
+void APAPlayerRMCharacter::SetAnimationBlended(bool InIsAnimationBlended)
+{
+	bIsAnimationBlended = InIsAnimationBlended;
 }
 
 bool APAPlayerRMCharacter::IsEquipWeapon()
@@ -417,12 +426,17 @@ void APAPlayerRMCharacter::SetInputAction()
 	CheckFindFunc(ChangeCombatModeAciton, TEXT("ChangeCombatMode"));
 	CheckFindFunc(SprintAction, TEXT("Sprint"));
 	CheckFindFunc(LightAttackAction, TEXT("LightAttack"));
+	CheckFindFunc(DodgeAction, TEXT("Dodge"));
+	CheckFindFunc(ParryAction, TEXT("Parry"));
+	CheckFindFunc(GuardAction, TEXT("Guard"));
+	CheckFindFunc(SpaceAction, TEXT("Space"));
+
 	// CheckFindFunc(HeavyAttackAction, TEXT("HeavyAttack"));
 }
 
 void APAPlayerRMCharacter::SetMontageTable()
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> PlayerAttackMontageDataTableObject(TEXT("DataTable'/Game/PA/Characters/Samuri/Animations/Attack/Samuri_CBADataTable.Samuri_CBADataTable'"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> PlayerAttackMontageDataTableObject(TEXT("DataTable'/Game/PA/DataTables/Samuri_CBADataTable.Samuri_CBADataTable'"));
 	if (PlayerAttackMontageDataTableObject.Succeeded())
 	{
 		PlayerAttackDataTable = PlayerAttackMontageDataTableObject.Object;
@@ -431,19 +445,53 @@ void APAPlayerRMCharacter::SetMontageTable()
 	if (MovementDataTableObject.Succeeded())
 	{
 		MovementDataTable = MovementDataTableObject.Object;
-
-		WalkMontage = MovementDataTable->FindRow<FMovementMontage>(FName("Walk"), TEXT(""), true);
-		SprintMontage = MovementDataTable->FindRow<FMovementMontage>(FName("Sprint"), TEXT(""), true);
-		CombatWalkMontage = MovementDataTable->FindRow<FMovementMontage>(FName("Walk_Combat"), TEXT(""), true);
-		CombatSprintMontage = MovementDataTable->FindRow<FMovementMontage>(FName("Sprint_Combat"), TEXT(""), true);
-
-		if (WalkMontage && SprintMontage && CombatWalkMontage && CombatSprintMontage)
+		if (!MovementDataTable->GetRowMap().IsEmpty())
 		{
-			MovementMontageArray.Add(WalkMontage->Montage);
-			MovementMontageArray.Add(SprintMontage->Montage);
-			MovementMontageArray.Add(CombatWalkMontage->Montage);
-			MovementMontageArray.Add(CombatSprintMontage->Montage);
+			MovementMontageArray.Add(MovementDataTable->FindRow<FMovementMontage>(FName("Walk"), TEXT(""), true)->Montage);
+			MovementMontageArray.Add(MovementDataTable->FindRow<FMovementMontage>(FName("Sprint"), TEXT(""), true)->Montage);
+			MovementMontageArray.Add(MovementDataTable->FindRow<FMovementMontage>(FName("Walk_Combat"), TEXT(""), true)->Montage);
+			MovementMontageArray.Add(MovementDataTable->FindRow<FMovementMontage>(FName("Sprint_Combat"), TEXT(""), true)->Montage);
 		}
+	}
+	static ConstructorHelpers::FObjectFinder<UDataTable> AvoidDataTableObject(TEXT("DataTable'/Game/PA/DataTables/Samuri_SpaceActionMontage.Samuri_SpaceActionMontage'"));
+	if (AvoidDataTableObject.Succeeded())
+	{
+		AvoidDataTable = AvoidDataTableObject.Object;
+		if (!AvoidDataTable->GetRowMap().IsEmpty())
+		{
+			AvoidMontageArray.Add(AvoidDataTable->FindRow<FAvoidMontage>(FName("Jump"), TEXT(""), true)->Montage);
+			AvoidMontageArray.Add(AvoidDataTable->FindRow<FAvoidMontage>(FName("Dodge"), TEXT(""), true)->Montage);
+		}
+	}
+	static ConstructorHelpers::FObjectFinder<UDataTable> DefenceDataTableObject(TEXT("DataTable'/Game/PA/DataTables/Samuri_DefenceMontageTable.Samuri_DefenceMontageTable'"));
+	if (DefenceDataTableObject.Succeeded())
+	{
+		DefenceDataTable = DefenceDataTableObject.Object;
+		if (!DefenceDataTable->GetRowMap().IsEmpty())
+		{
+			DefenceMontageArray.Add(DefenceDataTable->FindRow<FMontageData>(FName("Defence"), TEXT(""), true)->Montage);
+			DefenceMontageArray.Add(DefenceDataTable->FindRow<FMontageData>(FName("Parry"), TEXT(""), true)->Montage);
+		}
+	}
+}
+
+void APAPlayerRMCharacter::StartSpaceAction()
+{
+	if (!bIsCombatMode)
+	{
+		Jump();
+	}
+	else
+	{
+		Dodge();
+	}
+}
+
+void APAPlayerRMCharacter::CompleteSpaceAciton()
+{
+	if (!bIsCombatMode)
+	{
+		StopJumping();
 	}
 }
 
@@ -474,20 +522,33 @@ void APAPlayerRMCharacter::ThirdMove(const FInputActionValue& InPutValue)
 
 	// PA_LOG(LogTemp, Log, TEXT("MovementVector X= %f /  Y = %f"), MovementVector.X, MovementVector.Y);
 	// PA_LOG(LogTemp, Log, TEXT("ForwardDirection = %f %f %f"), ForwardDirection.X, ForwardDirection.Y, ForwardDirection.Z);
-	// PA_LOG(LogTemp, Log, TEXT("RightDirection = %f %f %f"), RightDirection.X, RightDirection.Y, RightDirection.Z);
 
 	FVector ForwardDirectionScale = ForwardDirection * MovementVector.X;
 	FVector RightDirectionScale = RightDirection * MovementVector.Y;
 
 	FVector DirVec = ForwardDirectionScale + RightDirectionScale;
 
-	SetActorLocationAndRotation(GetActorLocation(), DirVec.ToOrientationRotator());
+	DirVec.Normalize();
+	FVector ActorForwardVector = GetActorForwardVector();
+	ActorForwardVector.Normalize();
+	float dot = FVector::DotProduct(DirVec, ActorForwardVector);
+	FVector CrossProdot = FVector::CrossProduct(ActorForwardVector, DirVec);
+	float angle = FMath::RadiansToDegrees(FMath::Acos(dot));
+	if (CrossProdot.Z < 0.0f)
+	{
+		angle *= -1.0f;
+	}
+
+	// PA_LOG(LogTemp, Log, TEXT("InnerAngle = %f "), angle);
+	AddActorLocalRotation(FRotator(0.0f, angle * 0.5f, 0.0f));
+
+	// AddActorLocalRotation();
+	// SetActorLocationAndRotation(GetActorLocation(), DirVec.ToOrientationRotator());
 }
 
 void APAPlayerRMCharacter::ThirdLook(const FInputActionValue& InPutValue)
 {
 	FVector2D LookAxisVector = InPutValue.Get<FVector2D>();
-	// PA_LOG(LogTemp, Log, TEXT("LookAxisVector X= %f /  Y = %f"), LookAxisVector.X, LookAxisVector.Y);
 
 	AddControllerYawInput(LookAxisVector.X);
 	AddControllerPitchInput(LookAxisVector.Y);
@@ -518,8 +579,8 @@ void APAPlayerRMCharacter::InputAttack(const FInputActionValue& InPutValue)
 	bool bIsLightAttackInput = InPutValue.Get<bool>();
 	bUseControllerRotationYaw = false;	  // Animation에서 제어할예정
 	AttackMontage = PlayerAttackDataTable->FindRow<FPlayerAttackMontage>(AttackRowKey, "5", true);
-
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	SetAnimationBlended(false);
+	UAnimInstance* AnimInstance = GetAnimInstance();
 	if (!AnimInstance->Montage_IsPlaying(AttackMontage->Montage))
 	{
 		CurrentAttackIndex = 0;
@@ -548,7 +609,7 @@ void APAPlayerRMCharacter::NextComboAttack()
 	SetNextAttackInput(false);
 	CurrentAttackIndex = FMath::Clamp(CurrentAttackIndex + 1, 0, AttackMontage->AnimSectionCount);
 	FString NextAttackIndex = FString::Printf(TEXT("LightAttack%02d_Start"), CurrentAttackIndex);
-	GetMesh()->GetAnimInstance()->Montage_Stop(0.1f, AttackMontage->Montage);
+	GetAnimInstance()->Montage_Stop(0.1f, AttackMontage->Montage);
 	PlayAnimMontage(AttackMontage->Montage, 1.f, *NextAttackIndex);
 }
 
@@ -556,7 +617,7 @@ void APAPlayerRMCharacter::SprintStart(const FInputActionValue& InPutValue)
 {
 	bIsSprint = InPutValue.Get<bool>();
 	uint8 CurrentMovementState = bIsCombatMode * 2 + bIsSprint;
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	UAnimInstance* AnimInstance = GetAnimInstance();
 	bool IsMovementMontage = false;
 
 	for (auto MovementMontage : MovementMontageArray)
@@ -591,7 +652,7 @@ void APAPlayerRMCharacter::SprintEnd(const FInputActionValue& InPutValue)
 {
 	bIsSprint = InPutValue.Get<bool>();
 	uint8 CurrentMovementState = bIsCombatMode * 2 + bIsSprint;
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	UAnimInstance* AnimInstance = GetAnimInstance();
 	bool IsMovementMontage = false;
 	for (auto MovementMontage : MovementMontageArray)
 
@@ -625,9 +686,9 @@ void APAPlayerRMCharacter::SprintEnd(const FInputActionValue& InPutValue)
 void APAPlayerRMCharacter::MoveStart()
 {
 	uint8 CurrentMovementState = bIsCombatMode * 2 + bIsSprint;
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	CurrentMoveMontageSection = TEXT("Start_Start");
+	UAnimInstance* AnimInstance = GetAnimInstance();
 
+	CurrentMoveMontageSection = TEXT("Start_Start");
 	PA_LOG(LogTemp, Log, TEXT("Current Playing Montage State = %d"), CurrentMovementState);
 	if (FName(CurrentMoveMontageSection) == AnimInstance->Montage_GetCurrentSection(MovementMontageArray[CurrentMovementState]))
 	{
@@ -637,16 +698,104 @@ void APAPlayerRMCharacter::MoveStart()
 	PlayAnimMontage(MovementMontageArray[CurrentMovementState], 1.f, FName(*CurrentMoveMontageSection));
 }
 
+void APAPlayerRMCharacter::Dodge()
+{
+	PA_LOG(LogTemp, Log, TEXT("Dodge Start !"));
+
+	if (GetAnimInstance()->Montage_IsPlaying(AvoidMontageArray[1]))
+	{
+		return;
+	}
+	GetAnimInstance()->StopAllMontages(0.1f);
+	PlayAnimMontage(AvoidMontageArray[1], 1.0f, FName("Action_Start_Start"));
+}
+
+void APAPlayerRMCharacter::RightAction(const FInputActionValue& InPutValue)
+{
+	bool bIsInput = InPutValue.Get<bool>();
+	if (bIsInput)
+	{
+		PA_LOG(LogTemp, Log, TEXT("RightAction Trigger!"));
+		Guard(InPutValue);
+	}
+	else
+	{
+		PA_LOG(LogTemp, Log, TEXT("RightAction Trigger Cancel!"));
+		EndGuard(InPutValue);
+	}
+}
+
+void APAPlayerRMCharacter::Guard(const FInputActionValue& InPutValue)
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
+	UAnimMontage* GuardMontage = DefenceMontageArray[0];
+	FName CurrentSection = GetAnimInstance()->Montage_GetCurrentSection(GuardMontage);
+	if (!GetAnimInstance()->Montage_IsPlaying(GuardMontage) /*|| CurrentSection.Compare(FName("Action_End_Start"))==0 */)
+	{
+		SetAnimationBlended(true);
+		PlayAnimMontage(GuardMontage, 1.0f, FName("Action_Start_Start"));
+	}
+}
+
+void APAPlayerRMCharacter::EndGuard(const FInputActionValue& InPutValue)
+{
+	PA_LOG(LogTemp, Log, TEXT("RightAction Trigger Cancel!"));
+	SetAnimationBlended(true);
+
+	UAnimMontage* GuardMontage = DefenceMontageArray[0];
+	FName CurrentSection = GetAnimInstance()->Montage_GetCurrentSection(GuardMontage);
+	StopAnimMontage(GuardMontage);
+	PlayAnimMontage(GuardMontage, 1.0f, "Action_End_Start");
+}
+
+void APAPlayerRMCharacter::Parry(const FInputActionValue& InPutValue)
+{
+	bool bIsParry = InPutValue.Get<bool>();
+	if (bIsParry)
+	{
+		PA_LOG(LogTemp, Log, TEXT("Parry Start !"));
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		SetAnimationBlended(true);
+
+		UAnimMontage* ParryMontage = DefenceMontageArray[1];
+		if (!GetAnimInstance()->Montage_IsPlaying(ParryMontage))
+		{
+			PlayAnimMontage(ParryMontage, 1.0f, FName("Action_Start_Start"));
+		}
+	}
+}
+
+void APAPlayerRMCharacter::ParryAttack()
+{
+	SetAnimationBlended(true);
+
+	UAnimMontage* ParryMontage = DefenceMontageArray[1];
+	if (GetAnimInstance()->Montage_IsPlaying(ParryMontage))
+	{
+		PA_LOG(LogTemp, Log, TEXT("EndParry Start !"));
+		StopAnimMontage(ParryMontage);
+		PlayAnimMontage(ParryMontage, 0.5f, "Action_End_Start");
+	}
+}
+
 void APAPlayerRMCharacter::Move()
 {
-	CurrentMoveMontageSection = TEXT("Loop_Start");
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	FName ReadySection = TEXT("Start_Start");
 	uint8 CurrentMovementState = bIsCombatMode * 2 + bIsSprint;
-	PA_LOG(LogTemp, Log, TEXT("Current Playing Montage State = %d"), CurrentMovementState);
+	// PA_LOG(LogTemp, Log, TEXT("Current Playing Montage State = %d"), CurrentMovementState);
 
-	if (FName(CurrentMoveMontageSection) == AnimInstance->Montage_GetCurrentSection(MovementMontageArray[CurrentMovementState]))
+	FName CurrentPlaySection = GetAnimInstance()->Montage_GetCurrentSection(MovementMontageArray[CurrentMovementState]);
+	if (ReadySection == CurrentPlaySection)
 	{
-		PA_LOG(LogTemp, Log, TEXT("이미 Start Anim 재생 중....."));
+		// PA_LOG(LogTemp, Log, TEXT("Ready Move 재생 중....."));
+		return;
+	}
+
+	CurrentMoveMontageSection = TEXT("Loop_Start");
+	if (GetAnimInstance()->Montage_IsPlaying(MovementMontageArray[CurrentMovementState]) && FName(CurrentMoveMontageSection) == CurrentPlaySection)
+	{
+		// PA_LOG(LogTemp, Log, TEXT("이미 Start Anim 재생 중....."));
 		return;
 	}
 	PlayAnimMontage(MovementMontageArray[CurrentMovementState], 1.f, FName(*CurrentMoveMontageSection));
@@ -654,17 +803,29 @@ void APAPlayerRMCharacter::Move()
 
 void APAPlayerRMCharacter::MoveEnd()
 {
-	CurrentMoveMontageSection = "End_Start";
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	UAnimMontage* CurrentMonatage = AnimInstance->GetCurrentActiveMontage();
-	FString PrevMontageSection = AnimInstance->Montage_GetCurrentSection().ToString();
-	if (CurrentMoveMontageSection == PrevMontageSection)
+	FName ReadySection = TEXT("End_Start");
+	UAnimMontage* CrurrentMovementMontage = nullptr;
+	FName CurrentPlaySection;
+	for (auto MovementMontage : MovementMontageArray)
 	{
-		return;
+		if (GetAnimInstance()->Montage_IsPlaying(MovementMontage))
+		{
+			CrurrentMovementMontage = MovementMontage;
+			CurrentPlaySection = GetAnimInstance()->Montage_GetCurrentSection(MovementMontage);
+		}
 	}
 
-	AnimInstance->Montage_Stop(0.5f, CurrentMonatage);
-	PlayAnimMontage(CurrentMonatage, 1.f, FName(*CurrentMoveMontageSection));
+	CurrentMoveMontageSection = "End_Start";
+	PlayAnimMontage(CrurrentMovementMontage, 1.f, FName(*CurrentMoveMontageSection));
+	// UAnimMontage* CurrentMonatage = GetAnimInstance()->GetCurrentActiveMontage();
+	// FString PrevMontageSection = GetAnimInstance()->Montage_GetCurrentSection();
+	// if (CurrentMoveMontageSection == PrevMontageSection)
+	//{
+	//	return;
+	//}
+
+	// GetAnimInstance()->Montage_Stop(0.5f, CurrentMonatage);
+	// PlayAnimMontage(CrurrentMovementMontage, 1.f, FName(*CurrentMoveMontageSection));
 }
 
 void APAPlayerRMCharacter::MountingWeapon()

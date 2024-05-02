@@ -27,7 +27,6 @@ struct FMeleeCollisionProfile
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName Disabled;
 
-	// default constructor
 	FMeleeCollisionProfile() : Enabled(TEXT("Weapon")), Disabled(TEXT("NoCollision")){};
 };
 
@@ -112,6 +111,9 @@ protected:
 	void SetInputAction();
 	void SetMontageTable();
 
+	void StartSpaceAction();
+	void CompleteSpaceAciton();
+
 	void ChangeCombatMode(const FInputActionValue& InPutValue);
 	void ThirdMove(const FInputActionValue& InPutValue);
 	void ThirdLook(const FInputActionValue& InPutValue);
@@ -122,6 +124,16 @@ protected:
 	void SprintStart(const FInputActionValue& InPutValue);
 	void SprintEnd(const FInputActionValue& InPutValue);
 	void MoveStart();
+
+	void Dodge();
+
+	void RightAction(const FInputActionValue& InPutValue);
+	void Guard(const FInputActionValue& InPutValue);
+	void EndGuard(const FInputActionValue& InPutValue);
+
+	void Parry(const FInputActionValue& InPutValue);
+	void ParryAttack();
+
 
 public:
 	void Move();
@@ -136,17 +148,7 @@ public:
 	void CrouchStart();
 	void CrouchEnd();
 	void SetupKatana();	   // TestCode
-						   // void PunchAttack();
-						   // void KickAttack();
-						   // void AttackInput(EAttackType AttackType);
-						   // void WeaponInput(EWeaponType WeaponType);
-						   // void AttackStart();
-						   // void AttackEnd();
 
-	// void LightAttackStart();
-	// void LightAttackEnd();
-	// void StrongAttackStart();
-	// void StrongAttackEnd();
 	void NextComboAttack();
 
 private:
@@ -164,6 +166,18 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
 	TObjectPtr<class UInputAction> SprintAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
+	TObjectPtr<class UInputAction> SpaceAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
+	TObjectPtr<class UInputAction> DodgeAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
+	TObjectPtr<class UInputAction> ParryAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
+	TObjectPtr<class UInputAction> GuardAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "ture"))
 	TObjectPtr<class UInputAction> ThirdMoveAction;
@@ -195,15 +209,23 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
 	class UDataTable* MovementDataTable;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
+	class UDataTable* AvoidDataTable;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
+	class UDataTable* DefenceDataTable;
+
 	UPROPERTY(EditAnywhere, Category = Animation)
 	FName AttackRowKey = TEXT("Katana_4");
-
 
 	TArray<UAnimMontage*> MovementMontageArray;
 	FMovementMontage* WalkMontage;
 	FMovementMontage* SprintMontage;
 	FMovementMontage* CombatWalkMontage;
 	FMovementMontage* CombatSprintMontage;
+
+	TArray<UAnimMontage*> AvoidMontageArray;
+	TArray<UAnimMontage*> DefenceMontageArray;
 
 	FString CurrentMoveMontageSection;
 
@@ -214,6 +236,9 @@ private:
 public:
 	UFUNCTION(BlueprintCallable, Category = Animation)
 	bool IsAnimationBlended();
+
+	UFUNCTION(BlueprintCallable, Category = Animation)
+	void SetAnimationBlended(bool InIsAnimationBlended);
 
 	UFUNCTION(BlueprintCallable, Category = Animation)
 	bool IsEquipWeapon();
@@ -239,21 +264,18 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookUpRate;
 
-
 	UStaticMeshComponent* KatanaSwordSocket;
 	UStaticMeshComponent* KatanaSheathSocket;
 	UStaticMeshComponent* KatanaSheathInSocket;
 
-
 private:
-
 	UAudioComponent* PunchAudioComponent;
 	FPlayerAttackMontage* AttackMontage;
 	FMeleeCollisionProfile MeleeCollisionProfile;
 	EAttackType CurrentAttack;
 	EWeaponType CurrentWeaponType;
 	EAttackStrength CurrentAttackStrength;
-	
+
 	uint8 bIsAnimationBlended : 1;
 	uint8 bIsKeyboardEnabled : 1;
 	uint8 bIsLightAttack : 1;
@@ -292,12 +314,6 @@ public:
 	UFUNCTION()
 	void ResetCombo();
 
-	// UFUNCTION()
-	// void TriggerCountdownToIdle();
-	// UFUNCTION()
-	// void ArmPlayer();
-	// void FireLineTrace();
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Trace)
 	ELineTraceType LineTraceType;
 
@@ -309,14 +325,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Trace)
 	int32 MaxCountdownToIdle;
-
-protected:
-	// void MoveForward(float Value);
-	// void MoveRight(float Value);
-	// void TurnAtRate(float Rate);
-	// void LookUpAtRate(float Rate);
-	// void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
-	// void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
 protected:
 	// APawn interface

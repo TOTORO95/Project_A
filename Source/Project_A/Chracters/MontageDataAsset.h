@@ -46,6 +46,40 @@ struct FMovementMontage : public FTableRowBase
 	FString Description;
 };
 
+USTRUCT(BlueprintType)
+struct FAvoidMontage : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	/** Melee Fist Attack Montage **/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UAnimMontage* Montage;
+
+	/** amount of start sections within our montage **/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 AnimSectionCount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString Description;
+};
+
+USTRUCT(BlueprintType)
+struct FMontageData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	/** Melee Fist Attack Montage **/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UAnimMontage* Montage;
+
+	/** amount of start sections within our montage **/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 AnimSectionCount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString Description;
+};
+
 UCLASS()
 class PROJECT_A_API UMontageDataAsset : public UPrimaryDataAsset
 {

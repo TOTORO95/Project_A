@@ -32,7 +32,8 @@ protected:
 public:
 	virtual void MountingWeapon();
 	virtual void ReleaseWeapon();
-
+	virtual void AttackHitCheck();
+	virtual void PlayNextSectionMontage(class UAnimMontage* Montage, float PlayRate, FName NextSection);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AnimationMontage)
@@ -46,7 +47,8 @@ protected:
 	void ComboActionEnd(class UAnimMontage* TargetMontage, bool IsPropelyEnded);
 	void SetComboCheckTimer();
 	void ComboCheck();
-
+	TObjectPtr<class UAnimInstance> GetAnimInstance();
+	
 	int32 CurrentCombo = 0;
 	FTimerHandle ComboTimerHandle;
 	bool HasNextComboCommand = false;

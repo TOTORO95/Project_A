@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PACharacterCtrlDataAsset.h"
 #include "PAComboAttackDataAsset.h"
+#include "Physics/PACollision.h"
 #include "Project_A.h"
 
 // Sets default values
@@ -38,7 +39,7 @@ void APACharacterBase::InitCharacterComponent()
 {
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0.f, 0.f, -100.f), FRotator(0.f, -90.f, 0.f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 	
 	FString UE5DefaultMeshPath = TEXT("/Script/Engine.SkeletalMesh'/Game/PA/Characters/Samuri/SKM_PA_Samuri.SKM_PA_Samuri'");
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMeshRef(*UE5DefaultMeshPath);
@@ -72,7 +73,7 @@ void APACharacterBase::InitControllerRotation()
 void APACharacterBase::InitCollisionCompoent()
 {
 	GetCapsuleComponent()->InitCapsuleSize(42.0f, 96.f);
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	GetCapsuleComponent()->SetCollisionProfileName(CPROFILE_PACAPSULE);
 }
 
 void APACharacterBase::InitMovementComponent()
@@ -92,6 +93,45 @@ void APACharacterBase::MountingWeapon()
 
 void APACharacterBase::ReleaseWeapon()
 {
+}
+
+void APACharacterBase::AttackHitCheck()
+{
+	TArray<FHitResult> OutHitResults;
+	FHitResult OutHitResult;
+	FCollisionQueryParams Params(SCENE_QUERY_STAT(Attack), false, this);
+
+	const float AttackRange = 70.0f;
+	const float AttackRadius = 80.0f;
+	const float AttackDamage = 40.0f;
+	const FVector Start = GetActorLocation() + GetActorForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
+	const FVector End = Start + GetActorForwardVector() * AttackRange;
+
+	bool HitDetected = GetWorld()->SweepMultiByChannel(OutHitResults, Start, End, FQuat::Identity, CCHANNEL_PAACTION, FCollisionShape::MakeSphere(AttackRange), Params);
+	//bool HitDetected = GetWorld()->SweepSingleByChannel(OutHitResult, Start, End, FQuat::Identity, CCHANNEL_PAACTION, FCollisionShape::MakeSphere(AttackRange), Params);
+
+	if (HitDetected)
+	{
+		for (auto HitResult : OutHitResults)
+		{
+			//HitResult.GetActor()->getObjectname
+			PA_LOG(LogTemp, Log, TEXT("Hit %s"), *HitResult.GetActor()->GetFName().ToString());
+
+		}
+		
+		//OutHitResult.GetActor()->GetName()
+	}
+#if ENABLE_DRAW_DEBUG
+	FVector CapsuleOrigin = Start + (End - Start) * 0.5f;
+	float CapsuleHalfHeight = AttackRange * 0.5f;
+	FColor DrawColor = HitDetected ? FColor::Red : FColor::Green;
+	DrawDebugCapsule(GetWorld(), CapsuleOrigin, CapsuleHalfHeight, AttackRange, FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), DrawColor, false, 1.5f);
+#endif
+}
+
+void APACharacterBase::PlayNextSectionMontage(UAnimMontage* Montage, float PlayRate, FName NextSection)
+{
+	PlayAnimMontage(Montage, PlayRate, NextSection);
 }
 
 void APACharacterBase::ProcessComboCommand()
@@ -120,12 +160,11 @@ void APACharacterBase::ComboActionBegin()
 
 	const float AttackSpeedRate = 1.f;	  // TODO: AttackSpeedRate Convert Character Stat
 
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	AnimInstance->Montage_Play(ComboActionMontage, AttackSpeedRate);
+	GetAnimInstance()->Montage_Play(ComboActionMontage, AttackSpeedRate);
 
 	FOnMontageEnded EndDelegate;
 	EndDelegate.BindUObject(this, &APACharacterBase::ComboActionEnd);
-	AnimInstance->Montage_SetEndDelegate(EndDelegate, ComboActionMontage);
+	GetAnimInstance()->Montage_SetEndDelegate(EndDelegate, ComboActionMontage);
 
 	ComboTimerHandle.Invalidate();
 	SetComboCheckTimer();
@@ -161,11 +200,16 @@ void APACharacterBase::ComboCheck()
 	ComboTimerHandle.Invalidate();
 	if (HasNextComboCommand)
 	{
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		CurrentCombo = FMath::Clamp(CurrentCombo + 1, 1, ComboActionDataAsset->MaxComboCount);
 		FName NextSection = *FString::Printf(TEXT("%s%d"), *ComboActionDataAsset->MontageSectionNamePrefix, CurrentCombo);
-		AnimInstance->Montage_JumpToSection(NextSection, ComboActionMontage);
+		GetAnimInstance()->Montage_JumpToSection(NextSection, ComboActionMontage);
 		SetComboCheckTimer();
 		HasNextComboCommand = false;
 	}
 }
+
+TObjectPtr<class UAnimInstance> APACharacterBase::GetAnimInstance()
+{
+	return GetMesh()->GetAnimInstance();
+}
+
