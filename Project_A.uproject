@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.3",
+	"EngineAssociation": "5.4",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -22,5 +22,11 @@
 				"Editor"
 			]
 		}
+	],
+	"TargetPlatforms": [
+		"Android",
+		"IOS",
+		"Mac",
+		"Windows"
 	]
 }
