@@ -8,7 +8,7 @@ public class Project_A : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		PublicIncludePaths.AddRange(new string[] { "Project_A" });
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AnimGraphRuntime", "OnlineSubsystemSteam", "OnlineSubsystem"});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AnimGraphRuntime","HeadMountedDisplay", "UMG", "OnlineSubsystem"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

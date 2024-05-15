@@ -24,7 +24,6 @@ protected:
 	virtual void PostInitializeComponents() override;
 	virtual void DefaultGameTimer();
 	void FinishMatch();
-
 	FTimerHandle GameTimeHandle;
 
 protected:
