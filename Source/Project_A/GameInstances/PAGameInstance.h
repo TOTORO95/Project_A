@@ -24,6 +24,7 @@ class PROJECT_A_API UPAGameInstance : public UGameInstance
 
 	void Host();
 
+	void Join(const FString& Address);
 protected:
 	void InitUI();
 
