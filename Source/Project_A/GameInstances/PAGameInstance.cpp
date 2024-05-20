@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GameInstances/PAGameInstance.h"
+#include "Interfaces/PAGameInterface.h"
+#include "UI/PASteamWidget.h"
 
 UPAGameInstance::UPAGameInstance(const FObjectInitializer& ObjectInitalizer)
 {
@@ -13,41 +15,41 @@ void UPAGameInstance::Init()
 
 void UPAGameInstance::LoadMenu()
 {
-	TObjectPtr<UUserWidget> Menu = CreateWidget<UUserWidget>(this, MainMenuHud);
-	if (Menu == nullptr)
+	TObjectPtr<UPASteamWidget> Menu = CreateWidget<UPASteamWidget>(this, MainMenuHud);
+	if (!ensure(Menu != nullptr))
 	{
 		return;
 	}
-	Menu->AddToViewport();
 	APlayerController* PlayerController = GetFirstLocalPlayerController();
-	if (ensure(PlayerController != nullptr))
+	if (!ensure(PlayerController != nullptr))
 	{
 		return;
 	}
+
+	Menu->AddToViewport();
 	FInputModeUIOnly InputModeData;
 	InputModeData.SetWidgetToFocus(Menu->TakeWidget());
 	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	PlayerController->SetInputMode(InputModeData);
 
 	PlayerController->bShowMouseCursor = true;
+	Menu->SetMainMenuInterface(this);
 }
 
 void UPAGameInstance::Host()
 {
 	TObjectPtr<UEngine> Engine = GetEngine();
-	if (Engine == nullptr)
+	if (!ensure(Engine != nullptr))
+	{
+		return;
+	}
+	TObjectPtr<UWorld> World = GetWorld();
+	if(!ensure(World != nullptr))
 	{
 		return;
 	}
 	Engine->AddOnScreenDebugMessage(0, 2, FColor::Green, TEXT("Hosting"));
-
-	TObjectPtr<UWorld> World = GetWorld();
-	if(ensure(World != nullptr))
-	{
-		return;
-	}
 	World->ServerTravel("/Game/Maps/DevelopMap?listen");
-	//"/Script/Engine.World'/Game/Maps/DevelopMap.DevelopMap'"
 }
 
 void UPAGameInstance::Join(const FString& Address)

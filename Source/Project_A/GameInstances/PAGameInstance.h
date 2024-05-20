@@ -5,28 +5,30 @@
 #include "Blueprint/UserWidget.h"
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-
+#include "Interfaces/PAGameInterface.h"
 #include "PAGameInstance.generated.h"
 
 /**
  *
  */
 UCLASS()
-class PROJECT_A_API UPAGameInstance : public UGameInstance
+class PROJECT_A_API UPAGameInstance : public UGameInstance, public IPAGameInterface
 {
 	GENERATED_BODY()
 
 	UPAGameInstance(const FObjectInitializer& ObjectInitalizer);
 	virtual void Init() override;
-	
-	UFUNCTION(BlueprintCallable) 
+
+	UFUNCTION(BlueprintCallable)
 	void LoadMenu();
 
-	void Host();
-
+	virtual void Host() override;
 	void Join(const FString& Address);
+	//virtual void HostServer() override;
+
 protected:
 	void InitUI();
 
+private:
 	TSubclassOf<class UUserWidget> MainMenuHud;
 };

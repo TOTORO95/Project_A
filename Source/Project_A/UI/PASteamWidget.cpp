@@ -4,6 +4,11 @@
 
 #include "Components/Button.h"
 
+void UPASteamWidget::SetMainMenuInterface(IPAGameInterface* InMenuInterface)
+{
+	MenuInterface = InMenuInterface;
+}
+
 bool UPASteamWidget::Initialize()
 {
 	bool Success = Super::Initialize();
@@ -24,5 +29,9 @@ bool UPASteamWidget::Initialize()
 
 void UPASteamWidget::HostServer()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Host Server"));
+	if (!ensure(MenuInterface!=nullptr))
+	{
+		return;
+	}
+	MenuInterface->Host();
 }
