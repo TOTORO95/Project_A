@@ -9,6 +9,32 @@ void UPASteamWidget::SetMainMenuInterface(IPAGameInterface* InMenuInterface)
 	MenuInterface = InMenuInterface;
 }
 
+void UPASteamWidget::Setup()
+{
+	AddToViewport();
+
+	TObjectPtr<APlayerController> PlayerController = GetWorld()->GetFirstPlayerController();
+	FInputModeUIOnly InputModeData;
+	InputModeData.SetWidgetToFocus(TakeWidget());
+	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	PlayerController->SetInputMode(InputModeData);
+
+	PlayerController->bShowMouseCursor = true;
+}
+
+void UPASteamWidget::TearDown()
+{
+	RemoveFromViewport();
+	TObjectPtr<APlayerController> PlayerController = GetWorld()->GetFirstPlayerController();
+	FInputModeGameOnly InputModeData;
+	if (!ensure(PlayerController!=nullptr))
+	{
+		return;
+	}
+	PlayerController->SetInputMode(InputModeData);
+	PlayerController->bShowMouseCursor = false;
+}
+
 bool UPASteamWidget::Initialize()
 {
 	bool Success = Super::Initialize();

@@ -15,25 +15,13 @@ void UPAGameInstance::Init()
 
 void UPAGameInstance::LoadMenu()
 {
-	TObjectPtr<UPASteamWidget> Menu = CreateWidget<UPASteamWidget>(this, MainMenuHud);
-	if (!ensure(Menu != nullptr))
+	MainMenuHud = CreateWidget<UPASteamWidget>(this, MainMenuHudClass);
+	if (!ensure(MainMenuHud != nullptr))
 	{
 		return;
 	}
-	APlayerController* PlayerController = GetFirstLocalPlayerController();
-	if (!ensure(PlayerController != nullptr))
-	{
-		return;
-	}
-
-	Menu->AddToViewport();
-	FInputModeUIOnly InputModeData;
-	InputModeData.SetWidgetToFocus(Menu->TakeWidget());
-	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	PlayerController->SetInputMode(InputModeData);
-
-	PlayerController->bShowMouseCursor = true;
-	Menu->SetMainMenuInterface(this);
+	MainMenuHud->Setup();
+	MainMenuHud->SetMainMenuInterface(this);
 }
 
 void UPAGameInstance::Host()
@@ -48,17 +36,15 @@ void UPAGameInstance::Host()
 	{
 		return;
 	}
+
 	Engine->AddOnScreenDebugMessage(0, 2, FColor::Green, TEXT("Hosting"));
+	
+	MainMenuHud->TearDown();
 	World->ServerTravel("/Game/Maps/DevelopMap?listen");
 }
 
 void UPAGameInstance::Join(const FString& Address)
 {
-	UEngine* Engine = GetEngine();
-	if (ensure(Engine != nullptr))
-	{
-		return;
-	}
 	APlayerController* PlayerController = GetFirstLocalPlayerController();
 	if (ensure(PlayerController != nullptr))
 	{
@@ -70,13 +56,10 @@ void UPAGameInstance::Join(const FString& Address)
 void UPAGameInstance::InitUI()
 {
 	static ConstructorHelpers::FClassFinder<UUserWidget> MainMenuBPClass(TEXT("/Game/UI/WBP_MainMenu"));
-	if (MainMenuBPClass.Class == nullptr)
+	if (!ensure(MainMenuBPClass.Class != nullptr))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Not Found WBP_MainMenu"));
+		return;
 	}
-	else
-	{
-		MainMenuHud = MainMenuBPClass.Class;
-		UE_LOG(LogTemp, Warning, TEXT("Init UI"));
-	}
+	MainMenuHudClass = MainMenuBPClass.Class;
+	UE_LOG(LogTemp, Warning, TEXT("Init UI"));
 }

@@ -30,5 +30,6 @@ protected:
 	void InitUI();
 
 private:
-	TSubclassOf<class UUserWidget> MainMenuHud;
+	TSubclassOf<class UUserWidget> MainMenuHudClass;
+	TObjectPtr<class UPASteamWidget> MainMenuHud;
 };

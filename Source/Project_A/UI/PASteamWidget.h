@@ -15,8 +15,10 @@ UCLASS()
 class PROJECT_A_API UPASteamWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	public:
+public:
 	void SetMainMenuInterface(IPAGameInterface* InMenuInterface);
+	void Setup();
+	void TearDown();
 
 protected:
 	virtual bool Initialize();
@@ -24,6 +26,7 @@ protected:
 private:
 	UFUNCTION()
 	void HostServer();
+	
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> BtnHost;
