@@ -11,12 +11,13 @@ UPAGameInstance::UPAGameInstance(const FObjectInitializer& ObjectInitalizer)
 
 void UPAGameInstance::Init()
 {
+	Super::Init();
 }
 
 void UPAGameInstance::LoadMenu()
 {
 	MainMenuHud = CreateWidget<UPASteamWidget>(this, MainMenuHudClass);
-	if (!ensure(MainMenuHud != nullptr))
+	if (!ensure(MainMenuHud))
 	{
 		return;
 	}
@@ -26,30 +27,32 @@ void UPAGameInstance::LoadMenu()
 
 void UPAGameInstance::Host()
 {
-	TObjectPtr<UEngine> Engine = GetEngine();
-	if (!ensure(Engine != nullptr))
+	if (!ensure(GetEngine()) || !ensure(GetWorld()))
 	{
 		return;
 	}
-	TObjectPtr<UWorld> World = GetWorld();
-	if(!ensure(World != nullptr))
+	if (!ensure(MainMenuHud))
 	{
 		return;
 	}
 
-	Engine->AddOnScreenDebugMessage(0, 2, FColor::Green, TEXT("Hosting"));
+	GetEngine()->AddOnScreenDebugMessage(0, 2, FColor::Green, TEXT("Hosting"));
 	
 	MainMenuHud->TearDown();
-	World->ServerTravel("/Game/Maps/DevelopMap?listen");
+	GetWorld()->ServerTravel("/Game/Maps/DevelopMap?listen");
 }
 
 void UPAGameInstance::Join(const FString& Address)
 {
+	
 	APlayerController* PlayerController = GetFirstLocalPlayerController();
-	if (ensure(PlayerController != nullptr))
+	if (!ensure(PlayerController != nullptr))
 	{
 		return;
 	}
+	GetEngine()->AddOnScreenDebugMessage(0, 2, FColor::Green, TEXT("Hosting"));
+	MainMenuHud->TearDown();
+
 	PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
 }
 

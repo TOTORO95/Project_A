@@ -23,8 +23,13 @@ APAGameModeBase::APAGameModeBase()
 }
 void APAGameModeBase::StartPlay()
 {
-	PA_NETLOG(LogPANetwork, Log, TEXT("%s"), TEXT("Begin"));
 	Super::StartPlay();
+	PA_NETLOG(LogPANetwork, Log, TEXT("%s"), TEXT("Begin"));
+	
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->Exec(GetWorld(), TEXT("r.SetRes 1920x1080w"), *GLog);
+	}
 }
 
 void APAGameModeBase::PostInitializeComponents()
