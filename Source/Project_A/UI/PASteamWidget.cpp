@@ -6,11 +6,6 @@
 #include "Components/EditableText.h"
 #include "Components/WidgetSwitcher.h"
 
-void UPASteamWidget::SetMainMenuInterface(IPAGameInterface* InMenuInterface)
-{
-	MenuInterface = InMenuInterface;
-}
-
 bool UPASteamWidget::Initialize()
 {
 	if (!ensure(Super::Initialize()))
@@ -34,33 +29,6 @@ bool UPASteamWidget::Initialize()
 	return true;
 }
 
-void UPASteamWidget::Setup()
-{
-	AddToViewport();
-
-	TObjectPtr<APlayerController> PlayerController = GetWorld()->GetFirstPlayerController();
-	FInputModeUIOnly InputModeData;
-	InputModeData.SetWidgetToFocus(TakeWidget());
-	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	PlayerController->SetInputMode(InputModeData);
-
-	PlayerController->bShowMouseCursor = true;
-}
-
-void UPASteamWidget::TearDown()
-{
-	RemoveFromParent();
-	// RemoveFromViewport();
-	TObjectPtr<APlayerController> PlayerController = GetWorld()->GetFirstPlayerController();
-	FInputModeGameOnly InputModeData;
-	if (!ensure(PlayerController != nullptr))
-	{
-		return;
-	}
-	PlayerController->SetInputMode(InputModeData);
-	PlayerController->bShowMouseCursor = false;
-}
-
 void UPASteamWidget::HostServer()
 {
 	if (!ensure(MenuInterface != nullptr))
@@ -79,7 +47,7 @@ void UPASteamWidget::OpenJoinMenu()
 	MenuSwitcher->SetActiveWidget(JoinMenu);
 }
 void UPASteamWidget::JoinFromIpAddress()
-{	
+{
 	if (!ensure(IPAddressField) || !ensure(MenuInterface))
 	{
 		return;

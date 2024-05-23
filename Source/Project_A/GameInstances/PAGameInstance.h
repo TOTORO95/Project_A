@@ -21,7 +21,8 @@ class PROJECT_A_API UPAGameInstance : public UGameInstance, public IPAGameInterf
 
 	UFUNCTION(BlueprintCallable)
 	void LoadMenu();
-
+	UFUNCTION(BlueprintCallable)
+	void LoadInGameMenu();
 	virtual void Host() override;
 	void Join(const FString& Address);
 	//virtual void HostServer() override;
@@ -30,6 +31,9 @@ protected:
 	void InitUI();
 
 private:
-	TSubclassOf<class UUserWidget> MainMenuHudClass;
-	TObjectPtr<class UPASteamWidget> MainMenuHud;
+	TSubclassOf<class UUserWidget> MainMenuHUDClass;
+	TObjectPtr<class UPASteamWidget> MainMenuHUD;
+
+	TSubclassOf<class UUserWidget> IngameMenuHUDClass;
+	TObjectPtr<class UPAInGameMenuWidget> InGameMenuHUD;
 };

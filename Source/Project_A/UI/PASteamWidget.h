@@ -4,7 +4,7 @@
 
 #include "Blueprint/UserWidget.h"
 #include "CoreMinimal.h"
-#include "Interfaces/PAGameInterface.h"
+#include "UI/PAMenuWidget.h"
 
 #include "PASteamWidget.generated.h"
 
@@ -12,15 +12,11 @@
  *
  */
 UCLASS()
-class PROJECT_A_API UPASteamWidget : public UUserWidget
+class PROJECT_A_API UPASteamWidget : public UPAMenuWidget
 {
 	GENERATED_BODY()
 public:
-	void SetMainMenuInterface(IPAGameInterface* InMenuInterface);
 	virtual bool Initialize() override;
-	void Setup();
-	void TearDown();
-
 
 private:
 	UFUNCTION()
@@ -28,17 +24,16 @@ private:
 
 	UFUNCTION()
 	void OpenJoinMenu();
-	
+
 	UFUNCTION()
 	void JoinFromIpAddress();
 	UFUNCTION()
 	void CloseJoinMenu();
 
-
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> BtnHost;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UButton> BtnJoin;	
+	TObjectPtr<class UButton> BtnJoin;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> Btn_CloseJoin;
 	UPROPERTY(meta = (BindWidget))
@@ -51,6 +46,4 @@ private:
 	TObjectPtr<class UWidgetSwitcher> MenuSwitcher;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UEditableText> IPAddressField;
-
-	IPAGameInterface* MenuInterface;
 };

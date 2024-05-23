@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GameInstances/PAGameInstance.h"
+
 #include "Interfaces/PAGameInterface.h"
+#include "UI/PAInGameMenuWidget.h"
 #include "UI/PASteamWidget.h"
 
 UPAGameInstance::UPAGameInstance(const FObjectInitializer& ObjectInitalizer)
@@ -16,13 +18,25 @@ void UPAGameInstance::Init()
 
 void UPAGameInstance::LoadMenu()
 {
-	MainMenuHud = CreateWidget<UPASteamWidget>(this, MainMenuHudClass);
-	if (!ensure(MainMenuHud))
+	MainMenuHUD = CreateWidget<UPASteamWidget>(this, MainMenuHUDClass);
+	if (!ensure(MainMenuHUD))
 	{
 		return;
 	}
-	MainMenuHud->Setup();
-	MainMenuHud->SetMainMenuInterface(this);
+	MainMenuHUD->Setup();
+	MainMenuHUD->SetMainMenuInterface(this);
+
+}
+
+void UPAGameInstance::LoadInGameMenu()
+{
+	InGameMenuHUD = CreateWidget<UPAInGameMenuWidget>(this, IngameMenuHUDClass);
+	if (!ensure(InGameMenuHUD))
+	{
+		return;
+	}
+	InGameMenuHUD->Setup();
+	InGameMenuHUD->SetMainMenuInterface(this);
 }
 
 void UPAGameInstance::Host()
@@ -31,38 +45,44 @@ void UPAGameInstance::Host()
 	{
 		return;
 	}
-	if (!ensure(MainMenuHud))
+	if (!ensure(MainMenuHUD))
 	{
 		return;
 	}
 
 	GetEngine()->AddOnScreenDebugMessage(0, 2, FColor::Green, TEXT("Hosting"));
-	
-	MainMenuHud->TearDown();
+
+	MainMenuHUD->TearDown();
 	GetWorld()->ServerTravel("/Game/Maps/DevelopMap?listen");
 }
 
 void UPAGameInstance::Join(const FString& Address)
 {
-	
 	APlayerController* PlayerController = GetFirstLocalPlayerController();
 	if (!ensure(PlayerController != nullptr))
 	{
 		return;
 	}
 	GetEngine()->AddOnScreenDebugMessage(0, 2, FColor::Green, TEXT("Hosting"));
-	MainMenuHud->TearDown();
+	MainMenuHUD->TearDown();
 
 	PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
 }
 
 void UPAGameInstance::InitUI()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Init UI"));
 	static ConstructorHelpers::FClassFinder<UUserWidget> MainMenuBPClass(TEXT("/Game/UI/WBP_MainMenu"));
 	if (!ensure(MainMenuBPClass.Class != nullptr))
 	{
 		return;
 	}
-	MainMenuHudClass = MainMenuBPClass.Class;
-	UE_LOG(LogTemp, Warning, TEXT("Init UI"));
+	MainMenuHUDClass = MainMenuBPClass.Class;
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> InGameMenuBPClass(TEXT("/Game/UI/WBP_InGameMenu"));
+	if (!ensure(InGameMenuBPClass.Class != nullptr))
+	{
+		return;
+	}
+	IngameMenuHUDClass = InGameMenuBPClass.Class;
 }
