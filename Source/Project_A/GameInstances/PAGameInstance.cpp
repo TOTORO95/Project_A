@@ -69,6 +69,19 @@ void UPAGameInstance::Join(const FString& Address)
 	PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
 }
 
+void UPAGameInstance::LoadMainMenu()
+{
+	APlayerController* PlayerController = GetFirstLocalPlayerController();
+	if (!ensure(PlayerController != nullptr))
+	{
+		return;
+	}
+
+	
+	PlayerController->ClientTravel("/Game/Maps/MainMenu.MainMenu", ETravelType::TRAVEL_Absolute);
+	
+}
+
 void UPAGameInstance::InitUI()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Init UI"));

@@ -24,8 +24,11 @@ class PROJECT_A_API UPAGameInstance : public UGameInstance, public IPAGameInterf
 	UFUNCTION(BlueprintCallable)
 	void LoadInGameMenu();
 	virtual void Host() override;
-	void Join(const FString& Address);
-	//virtual void HostServer() override;
+
+	UFUNCTION(Exec)
+	void Join(const FString& Address) override;
+
+	virtual void LoadMainMenu() override;
 
 protected:
 	void InitUI();

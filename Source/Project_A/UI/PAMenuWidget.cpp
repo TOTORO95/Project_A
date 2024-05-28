@@ -24,7 +24,7 @@ void UPAMenuWidget::Setup()
 void UPAMenuWidget::TearDown()
 {
 	RemoveFromParent();
-	// RemoveFromViewport();
+
 	TObjectPtr<APlayerController> PlayerController = GetWorld()->GetFirstPlayerController();
 	FInputModeGameOnly InputModeData;
 	if (!ensure(PlayerController != nullptr))

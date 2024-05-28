@@ -18,9 +18,14 @@ class PROJECT_A_API UPAInGameMenuWidget : public UPAMenuWidget
 public:
 	virtual bool Initialize() override;
 
+	UFUNCTION()
+	void BackMainMenu();
+	UFUNCTION()
+	void CancelInGameMenu();
+
 private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> BtnBackMainMenu;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UButton> BtnCanceInGameMenu;
+	TObjectPtr<class UButton> BtnCancelInGameMenu;
 };
