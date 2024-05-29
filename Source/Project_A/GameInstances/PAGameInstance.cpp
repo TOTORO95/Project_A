@@ -25,7 +25,6 @@ void UPAGameInstance::LoadMenu()
 	}
 	MainMenuHUD->Setup();
 	MainMenuHUD->SetMainMenuInterface(this);
-
 }
 
 void UPAGameInstance::LoadInGameMenu()
@@ -77,9 +76,7 @@ void UPAGameInstance::LoadMainMenu()
 		return;
 	}
 
-	
 	PlayerController->ClientTravel("/Game/Maps/MainMenu.MainMenu", ETravelType::TRAVEL_Absolute);
-	
 }
 
 void UPAGameInstance::InitUI()

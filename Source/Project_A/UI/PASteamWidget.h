@@ -29,13 +29,17 @@ private:
 	void JoinFromIpAddress();
 	UFUNCTION()
 	void CloseJoinMenu();
+	UFUNCTION()
+	void QuitsGame();
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> BtnHost;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> BtnJoin;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<class UButton> Btn_CloseJoin;
+	TObjectPtr<class UButton> BtnQuitsGame;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<class UButton> BtnCloseJoin;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<class UButton> BtnIPJoin;
 	UPROPERTY(meta = (BindWidget))

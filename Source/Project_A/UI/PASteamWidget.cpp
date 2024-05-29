@@ -12,21 +12,32 @@ bool UPASteamWidget::Initialize()
 	{
 		return false;
 	}
-	if (!ensure(BtnHost != nullptr))
+	auto Checkfunc = [](TObjectPtr <UButton>Btn) 
 	{
-		return false;
-	}
-	if (!ensure(BtnJoin != nullptr))
+		if (!ensure(Btn != nullptr))
+		{
+			return false;
+		}
+		return true;
+	};
+
+	bool bIsEnable = false;
+	bIsEnable = Checkfunc(BtnHost);
+	bIsEnable = Checkfunc(BtnJoin);
+	bIsEnable = Checkfunc(BtnIPJoin);
+	bIsEnable = Checkfunc(BtnCloseJoin);
+	bIsEnable = Checkfunc(BtnQuitsGame);
+	if (!bIsEnable)
 	{
-		return false;
+		return bIsEnable;
 	}
 
 	BtnHost->OnClicked.AddDynamic(this, &UPASteamWidget::HostServer);
 	BtnJoin->OnClicked.AddDynamic(this, &UPASteamWidget::OpenJoinMenu);
 	BtnIPJoin->OnClicked.AddDynamic(this, &UPASteamWidget::JoinFromIpAddress);
-	Btn_CloseJoin->OnClicked.AddDynamic(this, &UPASteamWidget::CloseJoinMenu);
-
-	return true;
+	BtnCloseJoin->OnClicked.AddDynamic(this, &UPASteamWidget::CloseJoinMenu);
+	BtnQuitsGame->OnClicked.AddDynamic(this, &UPASteamWidget::QuitsGame);
+	return bIsEnable;
 }
 
 void UPASteamWidget::HostServer()
@@ -62,4 +73,30 @@ void UPASteamWidget::CloseJoinMenu()
 		return;
 	}
 	MenuSwitcher->SetActiveWidget(MainMenu);
+}
+
+void UPASteamWidget::QuitsGame()
+{
+	bool bIsEnable = false;
+
+	auto Checkfunc = [](auto ptr)
+	{
+		if (!ensure(ptr != nullptr))
+		{
+			return false;
+		}
+		return true;
+	};
+
+	TObjectPtr<UWorld> World = GetWorld();
+	bIsEnable = Checkfunc(World);
+
+	TObjectPtr<APlayerController> PlayerController = World->GetFirstPlayerController();
+	bIsEnable = Checkfunc(PlayerController);
+
+	if (!bIsEnable)
+	{
+		return;
+	}
+	PlayerController->ConsoleCommand(("quit"));
 }
